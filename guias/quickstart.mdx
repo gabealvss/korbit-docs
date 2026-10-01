@@ -116,8 +116,8 @@ curl -X POST https://api-test.korbit.com.br/v1/offers/{offerId}/publish \
 
 Cada oferta publicada recebe um `publicCode`. O link de pagamento é a página hospedada da Korbit onde o comprador conclui a compra:
 
-```
-https://korbit.com.br/o/{publicCode}
+```text
+https://checkout.korbit.com.br/o/{publicCode}
 ```
 
 Compartilhe esse link em qualquer canal. Quando o comprador pagar, o pedido aparece na sua conta via [webhooks](/webhooks/visao-geral) e na API de [pedidos](/catalogo-crm/clientes-e-pedidos).

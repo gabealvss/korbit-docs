@@ -9,7 +9,7 @@ O **link de pagamento** é uma URL pública por [oferta](/catalogo-crm/produtos-
 
 <Steps>
   <Step title="Oferta publicada gera um publicCode">
-    Toda oferta publicada tem um `publicCode`. O link é `https://korbit.com.br/o/{publicCode}`.
+    Toda oferta publicada tem um `publicCode`. O link é `https://checkout.korbit.com.br/o/{publicCode}`.
   </Step>
   <Step title="Comprador abre o link">
     A página cria uma **sessão de checkout** com um token efêmero (TTL de 30 minutos). O token nunca trafega como query param: vai no fragmento da URL e é imediatamente removido do endereço.
@@ -40,5 +40,5 @@ Retorna a oferta associada, o status da publicação e o destino do link — út
 Os endpoints que o navegador do comprador consome durante o checkout (resolver sessão, status, submit, sugestões de endereço) são **públicos e autenticados por token de sessão** — eles não fazem parte da API de merchant e estão intencionalmente fora da [reference](/api-reference). Sua integração normalmente não precisa chamá-los: a página hospedada cuida de tudo.
 
 <Warning>
-Nunca reutilize ou persista tokens de sessão de checkout no seu backend como se fossem credenciais: são efêmeros, de escopo único e expiram em 30 minutos.
+  Nunca reutilize ou persista tokens de sessão de checkout no seu backend como se fossem credenciais: são efêmeros, de escopo único e expiram em 30 minutos.
 </Warning>

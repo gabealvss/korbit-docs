@@ -21,23 +21,10 @@ Transitar do sandbox para produção envolve verificação da conta, liberação
 
 ## 2. Preparar a integração
 
-<Checklist>
-  <ChecklistItem title="Testar o fluxo completo no sandbox">
-    Venda aprovada, recusada e expirada; refund; webhook recebido e verificado. Use [simulações](/sandbox/simulate) para cenários de erro.
-  </ChecklistItem>
-  <ChecklistItem title="Idempotency-Key em todas as mutações">
-    Retries seguros em todo o caminho crítico. Veja [Idempotência](/guias/idempotencia).
-  </ChecklistItem>
-  <ChecklistItem title="Tratamento de erros e rate limits">
-    Backoff em `429`/`503` e decisão por `code`. Veja [Erros](/guias/erros) e [Rate limits](/guias/rate-limits).
-  </ChecklistItem>
-  <ChecklistItem title="Webhook endpoint em HTTPS público">
-    Verificação de assinatura implementada e resposta 2xx rápida. Veja [Assinatura de webhooks](/webhooks/assinatura).
-  </ChecklistItem>
-  <ChecklistItem title="Chaves com menor privilégio">
-    Nenhuma chave de produção com escopo além do necessário; segredos em gerenciador seguro, nunca em código.
-  </ChecklistItem>
-</Checklist>
+- [ ] Chaves de API de sandbox geradas
+- [ ] Conectar os Webhooks e eventos no seu URL de testes
+- [ ] Criar os produtos, ofertas e preços
+- [ ] Garantir que sua API sabe lidar com rate-limit, indisponibilidades e idempotência
 
 ## 3. Ativar produção
 
