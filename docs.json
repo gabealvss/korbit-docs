@@ -1,12 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "aspen",
   "name": "Korbit Docs",
   "description": "Documentação da API Korbit: pagamentos por PIX e cartão, assinaturas, checkout por link, payouts, antecipações e webhooks.",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#0D9373",
-    "dark": "#0A6B55"
+    "primary": "#6D3AF2",
+    "light": "#6D3AF2",
+    "dark": "#4F28B4"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -263,6 +263,16 @@
   "footer": {
     "socials": {
       "website": "https://korbit.com.br"
+    }
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "light": "#FAF9F6",
+      "dark": "#202124"
     }
   }
 }
