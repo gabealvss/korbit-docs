@@ -291,5 +291,24 @@
     "body": {
       "family": "DM Sans"
     }
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Dashvoard",
+      "href": "https://app.korbit.com.br"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "download-pdf",
+      "chatgpt",
+      "claude"
+    ],
+    "display": "header"
+  },
+  "search": {
+    "prompt": "Pesquise ou pergunte..."
   }
 }
