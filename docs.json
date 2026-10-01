@@ -8,7 +8,10 @@
     "light": "#6D3AF2",
     "dark": "#4F28B4"
   },
-  "favicon": "/favicon.svg",
+  "favicon": {
+    "light": "/images/favicon.png",
+    "dark": "/images/favicon.png"
+  },
   "navigation": {
     "tabs": [
       {
@@ -274,5 +277,10 @@
       "light": "#FAF9F6",
       "dark": "#202124"
     }
+  },
+  "logo": {
+    "light": "/images/Korbit_Logo_Default_Ultraviolet.svg",
+    "dark": "/images/Korbit_Logo_Default_Offwhite.svg",
+    "href": "https://korbit.com.br"
   }
 }
