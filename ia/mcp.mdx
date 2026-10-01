@@ -3,7 +3,7 @@ title: "MCP Server"
 description: "Use a Korbit a partir de Claude, Cursor, Codex e qualquer cliente MCP — com movimentação de dinheiro desligada por padrão."
 ---
 
-O **MCP server da Korbit** (`@korbit/mcp`) conecta seus assistentes de IA à API Korbit: consultar saldo, criar cobrança PIX, cadastrar cliente, acompanhar saques e contestações — direto da conversa.
+O **MCP server da Korbit** (`@korbitbr/mcp`) conecta seus assistentes de IA à API Korbit: consultar saldo, criar cobrança PIX, cadastrar cliente, acompanhar saques e contestações — direto da conversa.
 
 <Warning>
 **Segurança por padrão:** as ferramentas que movimentam dinheiro (solicitar saque, criar refund, cadastrar beneficiário, cancelar assinatura) ficam **desligadas** até você definir `KORBIT_MCP_ENABLE_MONEY_MOVEMENT=true`. Sem a flag, elas nem aparecem para o agente. Ligue a flag apenas quando confiar no cliente MCP — e comece sempre por uma chave `kbt_test_`.
@@ -14,7 +14,7 @@ O **MCP server da Korbit** (`@korbit/mcp`) conecta seus assistentes de IA à API
 Não precisa clonar nem compilar — o servidor roda via npx:
 
 ```bash
-npx -y @korbit/mcp
+npx -y @korbitbr/mcp
 ```
 
 Você precisa de uma [chave de API](/guias/autenticacao). O ambiente é derivado do prefixo: `kbt_test_…` usa o sandbox, `kbt_live_…` usa produção.
@@ -28,7 +28,7 @@ Em `claude_desktop_config.json` (Settings → Developer → Edit Config):
   "mcpServers": {
     "korbit": {
       "command": "npx",
-      "args": ["-y", "@korbit/mcp"],
+      "args": ["-y", "@korbitbr/mcp"],
       "env": { "KORBIT_API_KEY": "kbt_test_EXEMPLO_NAO_USAR" }
     }
   }
@@ -42,7 +42,7 @@ Em `~/.cursor/mcp.json` — mesma estrutura do Claude Desktop, com `"mcpServers"
 ### Claude Code / Codex CLI
 
 ```bash
-claude mcp add korbit --env KORBIT_API_KEY=kbt_test_EXEMPLO_NAO_USAR -- npx -y @korbit/mcp
+claude mcp add korbit --env KORBIT_API_KEY=kbt_test_EXEMPLO_NAO_USAR -- npx -y @korbitbr/mcp
 ```
 
 Reinicie o cliente após alterar a configuração.
