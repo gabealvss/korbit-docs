@@ -1,0 +1,25 @@
+---
+title: "Sandbox (simulate) — Referência"
+description: "Os endpoints de simulação: controle o desfecho de pagamentos no ambiente de teste."
+---
+
+Os endpoints desta categoria existem **apenas no sandbox** (chaves `kbt_test_`): como não há dinheiro nem provedor real, o desfecho das operações é controlado por você.
+
+| Endpoint | Efeito |
+| --- | --- |
+| `simulate` | Força o payment intent para `SUCCEEDED`, `FAILED` ou `EXPIRED` |
+| `cases/simulate` | Cria um caso de refund/disputa para exercitar prazos e respostas |
+| `webhooks/simulate` | Entrega ao seu endpoint a mensagem **assinada** equivalente ao evento |
+| `test/subscriptions/{id}/simulate` | Avança o ciclo da assinatura de teste (fatura + cobrança simulada) |
+
+## Por que simular a entrega de webhook?
+
+A entrega simulada passa pelo mesmo transporte assinado (Svix) da produção — é a forma mais fiel de validar a [verificação de assinatura](/webhooks/assinatura) e a deduplicação do seu consumidor antes do go-live.
+
+## Comportamento idêntico ao real
+
+Simulações respeitam estados e invariantes: pagamento já confirmado não pode ser "recusado", valores divergentes são recusados, e os erros retornam os mesmos `code` da produção. Seu fluxo de erro desenvolvido aqui funciona em produção sem ajustes.
+
+<Tip>
+Roteiro completo de testes recomendados em [Casos de teste](/sandbox/casos-de-teste).
+</Tip>

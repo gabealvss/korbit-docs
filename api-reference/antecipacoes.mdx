@@ -1,0 +1,36 @@
+---
+title: "Antecipações — Referência"
+description: "Recebíveis, cotação com taxa de desconto e o fluxo de solicitação."
+---
+
+Uma **antecipação** converte recebíveis futuros em saldo hoje, com taxa de desconto calculada pela Korbit.
+
+## Fluxo
+
+```mermaid
+flowchart LR
+  R[Recebíveis] --> E[Elegibilidade]
+  E --> Q[Cotação]
+  Q --> S[Solicitação]
+  S --> RV[Revisão Korbit]
+  RV --> L[Liberado ao saldo]
+```
+
+## Objetos
+
+| Objeto | Conteúdo |
+| --- | --- |
+| Recebível | Valor futuro + data de liberação prevista + estado de uso (livre ou em garantia) |
+| Cotação | Bruto, taxa de desconto, líquido e validade — usar expirada retorna `409 ADVANCE_QUOTE_EXPIRED` |
+| Solicitação | Recebíveis vinculados + cotação aplicada + estado |
+
+## Regras que importam
+
+- **Um recebível, uma garantia**: o mesmo recebível não sustenta duas antecipações — a reserva é transacional e revalidada na liberação.
+- **Segregação de papéis** na Korbit: revisão e liberação são feitas por operadores distintos.
+- **Custo x tempo**: a taxa depende do tempo até a liberação — quanto antes antecipar, maior o desconto.
+- Divergências futuras (refund/chargeback sobre recebível antecipado) impactam os próximos recebíveis — leia os termos comerciais da conta.
+
+<Tip>
+Consulte `GET /v1/advance/eligibility` antes de expor a opção de antecipação no seu produto — evita frustração com solicitação recusada.
+</Tip>

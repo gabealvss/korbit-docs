@@ -1,0 +1,54 @@
+---
+title: "Introdução à API"
+description: "Visão geral da API Korbit: convenções, autenticação, ambientes e como navegar pela referência."
+---
+
+A API Korbit é **REST/JSON** com contratos versionados via OpenAPI. Tudo que está nesta referência é o que a API faz — a especificação é gerada automaticamente do nosso OpenAPI 3.1.
+
+## Bases por ambiente
+
+| Ambiente | Base URL | Chave |
+| --- | --- | --- |
+| Produção | `https://api.korbit.com.br` | `kbt_live_…` |
+| Sandbox | `https://api-test.korbit.com.br` | `kbt_test_…` |
+
+O ambiente é derivado **da chave** — não existe parâmetro de ambiente na requisição. Detalhes em [Autenticação](/guias/autenticacao) e [Ambientes e sandbox](/guias/ambientes-e-sandbox).
+
+## Autenticação
+
+Todas as rotas desta referência exigem chave de API de merchant no header `Authorization`:
+
+```bash
+Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR
+```
+
+Cada chave tem **escopos** (`payments:write`, `payouts:write`, `refunds:write`…) que limitam o que ela pode fazer. Rota sem escopo retorna `403 INSUFFICIENT_SCOPE`.
+
+## Convenções que valem para todos os endpoints
+
+<CardGroup cols={2}>
+  <Card title="Idempotência" icon="key" href="/guias/idempotencia">
+    Toda mutação aceita `Idempotency-Key`: retries são seguros — mesma chave + mesmo payload retorna a resposta original.
+  </Card>
+  <Card title="Erros RFC 7807" icon="triangle-alert" href="/guias/erros">
+    Erros em `application/problem+json` com `code` estável. Decida sua lógica pelo `code`, nunca pelo texto.
+  </Card>
+  <Card title="Rate limits" icon="gauge" href="/guias/rate-limits">
+    Limites por rota (ex.: 60/min para criar payment intent) com headers `Rate-Limit-*` e `429` + `Retry-After`.
+  </Card>
+  <Card title="Moeda" icon="coins" href="/guias/moeda-e-valores">
+    Todos os valores são **inteiros em centavos** (BRL): `14990` = R$ 149,90.
+  </Card>
+</CardGroup>
+
+## Dev mode (sandbox)
+
+Com uma chave `kbt_test_` você desenvolve o fluxo completo sem tocar em dinheiro: providers fake, código PIX de teste e **endpoints de simulação** para controlar aprovações, recusas e expirações — inclusive a entrega de webhooks assinados. Veja [Sandbox](/sandbox/visao-geral).
+
+## Webhooks
+
+O estado muda na Korbit, o seu sistema fica sabendo por **webhooks assinados** (padrão Svix) — pagamentos, refunds, payouts, disputas e atualizações de conta. A entrega é at-least-once com agenda de retries. Veja a [tab de Webhooks](/webhooks/visao-geral).
+
+## Como ler esta referência
+
+Cada categoria começa com uma **página de referência** que explica o modelo de objetos, os estados e o contexto de uso — depois vêm os endpoints gerados da spec, com descrição de cada campo e exemplos prontos para o playground. Recomendação de leitura para começar: [Pagamentos](/api-reference/pagamentos) → [Checkout](/api-reference/checkout) → [Webhook Subscriptions](/api-reference/webhook-subscriptions).

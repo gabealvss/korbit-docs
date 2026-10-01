@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { argv, exit } from 'node:process';
+import { operations } from './enrichments.mjs';
 
 const args = {};
 for (let i = 2; i < argv.length; i++) {
@@ -48,6 +49,7 @@ const REMOVED_PATH_PATTERNS = [
 ];
 
 const removed = [];
+const appliedEnrichments = new Set();
 const paths = {};
 for (const [path, item] of Object.entries(spec.paths ?? {})) {
   if (REMOVED_PATH_PATTERNS.some((re) => re.test(path))) {
@@ -97,11 +99,78 @@ function humanize(operationId) {
   return words.map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
 }
 
+// Mintlify v4 não renderiza propriedades via $ref/if-then-else: inline as variantes
+// do requestBody num único objeto (união de properties/required) para a tabela de campos.
+function inlineRequestBodyVariants(schema) {
+  if (!schema || typeof schema !== 'object') return schema;
+  const variantRefs = ['then', 'else', 'oneOf', 'anyOf', 'allOf'];
+  const hasVariants = variantRefs.some((k) => schema[k]);
+  if (!hasVariants) return schema;
+  const merged = { ...schema };
+  for (const key of [...variantRefs, 'if']) delete merged[key];
+  merged.properties = { ...(schema.properties ?? {}) };
+  merged.required = [...(schema.required ?? [])];
+  for (const key of variantRefs) {
+    const node = schema[key];
+    const resolve = (n) =>
+      typeof n?.$ref === 'string' && n.$ref.startsWith('#/components/schemas/')
+        ? spec.components?.schemas?.[n.$ref.split('/').pop()]
+        : n;
+    for (const variant of Array.isArray(node) ? node : [node]) {
+      const resolved = resolve(variant);
+      if (!resolved) continue;
+      merged.properties = { ...merged.properties, ...(resolved.properties ?? {}) };
+      for (const req of resolved.required ?? []) {
+        if (!merged.required.includes(req)) merged.required.push(req);
+      }
+    }
+  }
+  if (merged.required.length === 0) delete merged.required;
+  return merged;
+}
+
 for (const [path, item] of Object.entries(paths)) {
   for (const [method, op] of Object.entries(item)) {
     if (!['get', 'post', 'put', 'patch', 'delete'].includes(method)) continue;
     op.tags = [tagOf(path)];
-    if (!op.summary && op.operationId) op.summary = humanize(op.operationId);
+    const en = op.operationId ? operations[op.operationId] : undefined;
+    if (en) {
+      if (en.summary) op.summary = en.summary;
+      if (en.description) op.description = en.description;
+      if (en.params && Array.isArray(op.parameters)) {
+        for (const p of op.parameters) if (en.params[p.name]) p.description = en.params[p.name];
+      }
+      const bodySchema = inlineRequestBodyVariants(op.requestBody?.content?.['application/json']?.schema);
+      if (bodySchema) op.requestBody.content['application/json'].schema = bodySchema;
+      if (en.body && bodySchema && typeof bodySchema === 'object') {
+        // aplica no schema inline e em qualquer $ref (then/else/oneOf/allOf) do corpo
+        const targets = [];
+        const collect = (node) => {
+          if (!node || typeof node !== 'object') return;
+          if (Array.isArray(node)) return node.forEach(collect);
+          if (node.properties) targets.push(node);
+          if (typeof node.$ref === 'string' && node.$ref.startsWith('#/components/schemas/')) {
+            const resolved = spec.components?.schemas?.[node.$ref.split('/').pop()];
+            if (resolved) targets.push(resolved);
+          }
+          for (const key of ['properties', 'then', 'else', 'oneOf', 'anyOf', 'allOf']) {
+            if (node[key]) collect(node[key]);
+          }
+        };
+        collect(bodySchema);
+        for (const target of targets) {
+          if (target && target.properties) {
+            for (const [key, text] of Object.entries(en.body)) {
+              if (target.properties[key]) target.properties[key].description = text;
+            }
+          }
+        }
+      }
+      if (en.content) op['x-mint'] = { content: en.content };
+      appliedEnrichments.add(op.operationId);
+    } else if (op.operationId && !op.summary) {
+      op.summary = humanize(op.operationId);
+    }
   }
 }
 
@@ -181,7 +250,10 @@ const FORBIDDEN_STRINGS = [
   /\.fly\.dev/,
   /app-staging\.korbit/,
   /korbit_api:|korbit_worker:|postgresql:\/\//,
-  /kbt_(live|test)_[A-Za-z0-9_-]{16,}/, // nenhuma chave com cara de real
+  /kbt_(live|test)_(?!EXEMPLO)[A-Za-z0-9_-]{16,}/, // nenhuma chave com cara de real (placeholders EXEMPLO permitidos)
+  /woovi/i, // nomes de provedores nunca chegam ao público
+  /mercado[\s_-]?pago/i,
+  /mercadopago/i,
 ];
 const violations = [];
 for (const path of Object.keys(output.paths)) {
@@ -201,6 +273,10 @@ scan(output, '$');
 
 if (removed.length === 0) {
   violations.push('nenhum path foi removido — spec de origem inesperado; verifique --spec');
+}
+const missingEnrichment = Object.keys(operations).filter((id) => !appliedEnrichments.has(id));
+if (missingEnrichment.length > 0) {
+  console.warn(`AVISO: enrichments sem operação correspondente: ${missingEnrichment.join(', ')}`);
 }
 if (violations.length > 0) {
   console.error(`GUARD DE SEGURANÇA FALHOU (${violations.length}):`);

@@ -47,8 +47,13 @@
         "openapi": "openapi/korbit-public-v1.json",
         "groups": [
           {
+            "group": "Visão geral",
+            "pages": ["api-reference/introducao"]
+          },
+          {
             "group": "Pagamentos",
             "pages": [
+              "api-reference/pagamentos",
               "POST /v1/payment-intents",
               "GET /v1/payment-intents/{id}"
             ]
@@ -56,6 +61,7 @@
           {
             "group": "Checkout",
             "pages": [
+              "api-reference/checkout",
               "POST /v1/checkout-sessions",
               "GET /v1/checkout-links/{publicCode}"
             ]
@@ -63,6 +69,7 @@
           {
             "group": "Assinaturas",
             "pages": [
+              "api-reference/assinaturas",
               "GET /v1/subscriptions",
               "GET /v1/subscriptions/{id}",
               "GET /v1/subscriptions/{id}/invoices",
@@ -73,6 +80,7 @@
           {
             "group": "Clientes e Pedidos",
             "pages": [
+              "api-reference/clientes-e-pedidos",
               "POST /v1/customers",
               "GET /v1/customers",
               "GET /v1/customers/{id}",
@@ -90,6 +98,7 @@
           {
             "group": "Catálogo",
             "pages": [
+              "api-reference/catalogo",
               "POST /v1/products",
               "GET /v1/products",
               "GET /v1/products/{id}",
@@ -115,6 +124,7 @@
           {
             "group": "Saldo e Saques",
             "pages": [
+              "api-reference/saldo-e-saques",
               "GET /v1/balance",
               "GET /v1/balance/breakdown",
               "GET /v1/funds/releases",
@@ -132,6 +142,7 @@
           {
             "group": "Antecipações",
             "pages": [
+              "api-reference/antecipacoes",
               "GET /v1/advance/receivables",
               "GET /v1/advance/eligibility",
               "POST /v1/advance/quotes",
@@ -143,6 +154,7 @@
           {
             "group": "Refunds e Disputas",
             "pages": [
+              "api-reference/refunds-e-disputas",
               "POST /v1/refunds",
               "GET /v1/refund-cases",
               "GET /v1/refund-cases/{caseId}",
@@ -154,6 +166,7 @@
           {
             "group": "Chaves de API",
             "pages": [
+              "api-reference/chaves-de-api",
               "POST /v1/iam/api-keys",
               "GET /v1/iam/api-keys",
               "POST /v1/iam/api-keys/{id}/rotate",
@@ -163,6 +176,7 @@
           {
             "group": "Webhook Subscriptions",
             "pages": [
+              "api-reference/webhook-subscriptions",
               "POST /v1/webhook-subscriptions",
               "GET /v1/webhook-subscriptions",
               "POST /v1/webhook-subscriptions/{id}/disable"
@@ -170,11 +184,12 @@
           },
           {
             "group": "Atividade",
-            "pages": ["GET /v1/activity"]
+            "pages": ["api-reference/atividade", "GET /v1/activity"]
           },
           {
             "group": "Sandbox (simulate)",
             "pages": [
+              "api-reference/sandbox",
               "POST /v1/sandbox/payment-intents/{id}/simulate",
               "POST /v1/sandbox/payment-intents/{id}/cases/simulate",
               "POST /v1/sandbox/payment-intents/{id}/webhooks/simulate",

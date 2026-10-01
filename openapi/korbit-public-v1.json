@@ -83,12 +83,14 @@
                 "properties": {
                   "expiresAt": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "date-time",
+                    "description": "Expiração opcional (ISO 8601). Recomendado para chaves de uso temporário."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 100
+                    "maxLength": 100,
+                    "description": "Nome descritivo da chave (ex.: `erp-producao`, `conciliacao-job`)."
                   },
                   "scopes": {
                     "type": "array",
@@ -107,7 +109,8 @@
                         "commerce:read",
                         "commerce:write"
                       ]
-                    }
+                    },
+                    "description": "Escopos concedidos — a chave nunca pode fazer mais que o declarado aqui."
                   }
                 }
               }
@@ -453,7 +456,8 @@
             }
           }
         },
-        "summary": "Create Api Key"
+        "summary": "Criar chave de API",
+        "description": "Cria uma chave com os escopos informados. O token completo (`kbt_…`) é retornado **uma única vez** — guarde-o em gerenciador de segredos. Aplique o menor privilégio: crie chaves por integração com escopos mínimos."
       },
       "get": {
         "operationId": "listApiKeys",
@@ -665,7 +669,8 @@
             }
           }
         },
-        "summary": "List Api Keys"
+        "summary": "Listar chaves de API",
+        "description": "Chaves da conta com escopos, estado e último uso. O segredo nunca é retornado."
       }
     },
     "/v1/iam/api-keys/{id}/rotate": {
@@ -1131,7 +1136,11 @@
             }
           }
         },
-        "summary": "Rotate Api Key"
+        "summary": "Rotacionar chave de API",
+        "description": "Cria o token substituto e revoga o anterior após a carência configurada (`gracePeriodSeconds`) — rotação sem downtime. O novo token é exibido uma única vez.",
+        "x-mint": {
+          "content": "<Warning>\nRotação substitui o token: atualize seus serviços dentro da janela de carência, senão as chamadas começam a receber `401`.\n</Warning>"
+        }
       }
     },
     "/v1/iam/api-keys/{id}": {
@@ -1425,7 +1434,8 @@
             }
           }
         },
-        "summary": "Revoke Api Key"
+        "summary": "Revogar chave de API",
+        "description": "Revoga imediatamente — toda chamada seguinte retorna `401`. Use em suspeita de vazamento."
       }
     },
     "/v1/sandbox/payment-intents/{id}/simulate": {
@@ -1812,7 +1822,8 @@
             }
           }
         },
-        "summary": "Simulate Sandbox Payment Intent"
+        "summary": "Simular resultado de pagamento",
+        "description": "Força o desfecho de um payment intent de teste: aprovar, recusar ou expirar. Disponível apenas com chaves `kbt_test_` — no sandbox não existe \"pagar de verdade\"."
       }
     },
     "/v1/sandbox/payment-intents/{id}/cases/simulate": {
@@ -2045,7 +2056,8 @@
             }
           }
         },
-        "summary": "Simulate Sandbox Case"
+        "summary": "Simular caso de refund",
+        "description": "Cria um caso de refund/disputa sobre um payment intent de teste para exercitar [aprovação, contestação e prazos](/refunds-disputas/refunds)."
       }
     },
     "/v1/sandbox/payment-intents/{id}/webhooks/simulate": {
@@ -2283,7 +2295,8 @@
             }
           }
         },
-        "summary": "Simulate Sandbox Webhook Transport"
+        "summary": "Simular entrega de webhook",
+        "description": "Envia ao seu endpoint a mesma mensagem **assinada** que a produção enviaria — perfeito para validar a [verificação de assinatura](/webhooks/assinatura) com dados reais de entrega."
       }
     },
     "/v1/payment-intents": {
@@ -2299,31 +2312,142 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "paymentMethod"
+                  "paymentMethod",
+                  "amount",
+                  "card",
+                  "currency"
                 ],
                 "properties": {
                   "paymentMethod": {
                     "type": "string",
                     "enum": [
-                      "PIX",
-                      "CARD"
-                    ]
-                  }
-                },
-                "if": {
-                  "properties": {
-                    "paymentMethod": {
-                      "enum": [
-                        "CARD"
-                      ]
+                      "PIX"
+                    ],
+                    "description": "Método de pagamento: `PIX` para cobrança instantânea por QR/copia-e-cola ou `CARD` para cartão de crédito."
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Valor total em centavos (BRL). Ex.: `14990` = R$ 149,90. Não há campo de desconto nem taxa — o valor cobrado é exatamente este."
+                  },
+                  "card": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "installments",
+                      "payer",
+                      "paymentMethodId",
+                      "paymentMethodType",
+                      "token"
+                    ],
+                    "properties": {
+                      "deviceSessionId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256,
+                        "pattern": "^[A-Za-z0-9_-]+$"
+                      },
+                      "installments": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 24
+                      },
+                      "issuerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "payer": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "email"
+                        ],
+                        "properties": {
+                          "email": {
+                            "type": "string",
+                            "format": "email",
+                            "maxLength": 254
+                          },
+                          "identification": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "number",
+                              "type"
+                            ],
+                            "properties": {
+                              "number": {
+                                "type": "string",
+                                "minLength": 11,
+                                "maxLength": 18,
+                                "pattern": "^[0-9]+$"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "CPF",
+                                  "CNPJ"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "paymentMethodId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "paymentMethodType": {
+                        "type": "string",
+                        "enum": [
+                          "credit_card",
+                          "debit_card"
+                        ]
+                      },
+                      "token": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2048
+                      }
                     }
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "BRL"
+                    ],
+                    "description": "Moeda da cobrança. Atualmente apenas `BRL`."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Descrição visível nos relatórios e na conciliação (ex.: \"Pedido #1042\"). Não é exibida ao comprador no checkout hospedado."
+                  },
+                  "externalReference": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "description": "Seu identificador interno do pedido (ex.: id no seu banco). Útil para conciliar depois — pode ser consultado e filtrado."
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "maxProperties": 20,
+                    "additionalProperties": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "description": "Objeto livre para seus dados (máx. de chaves limitado pelo schema). Nunca inclua dados pessoais sensíveis."
+                  },
+                  "expiresInSeconds": {
+                    "type": "integer",
+                    "minimum": 300,
+                    "maximum": 86400,
+                    "description": "TTL da cobrança em segundos. Após expirar, a cobrança não pode mais ser paga (PIX padrão: 900 s)."
                   }
-                },
-                "then": {
-                  "$ref": "#/components/schemas/def-11"
-                },
-                "else": {
-                  "$ref": "#/components/schemas/def-61"
                 }
               }
             }
@@ -2926,7 +3050,11 @@
             }
           }
         },
-        "summary": "Create Payment Intent"
+        "summary": "Criar payment intent",
+        "description": "Cria uma cobrança por **PIX** ou **cartão**. A resposta vem em `REQUIRES_ACTION` com os dados para o comprador pagar (código PIX copia-e-cola) ou com o desafio de autenticação pendente. O estado final da cobrança chega pelos eventos de webhook — consulte `GET /v1/payment-intents/{id}` sempre que precisar do estado autoritativo. Requer `Idempotency-Key`.",
+        "x-mint": {
+          "content": "<Note>\nO valor é sempre em **centavos** e é fixado server-side a partir deste corpo — o comprador não altera valores. Veja [Moeda e valores](/guias/moeda-e-valores).\n</Note>\n\n<Tip>\nGere um `Idempotency-Key` novo por intenção de cobrança e reutilize-o nos retries do mesmo request. Veja [Idempotência](/guias/idempotencia).\n</Tip>"
+        }
       }
     },
     "/v1/payment-intents/{id}": {
@@ -2943,7 +3071,8 @@
             },
             "in": "path",
             "name": "id",
-            "required": true
+            "required": true,
+            "description": "Identificador do payment intent (UUID)."
           }
         ],
         "security": [
@@ -3286,7 +3415,8 @@
             }
           }
         },
-        "summary": "Get Payment Intent"
+        "summary": "Obter payment intent",
+        "description": "Retorna o estado atual e todos os dados de uma cobrança da sua conta. Use para conciliação, retomada de compra (status `REQUIRES_ACTION` com dados do PIX) e verificação pós-webhook."
       }
     },
     "/v1/subscriptions/{id}/cancel": {
@@ -3755,7 +3885,11 @@
             }
           }
         },
-        "summary": "Request Subscription Cancellation"
+        "summary": "Cancelar assinatura",
+        "description": "Cancela imediatamente: nenhuma nova fatura é gerada. As faturas já pagas não são afetadas. O comprador também pode cancelar sozinho no [portal do cliente](/pagamentos/assinaturas#portal-do-cliente).",
+        "x-mint": {
+          "content": "<Warning>\nO cancelamento é definitivo para o ciclo atual. Se o objetivo é pausar cobranças, avalie trocar a oferta por uma versão de valor menor via [revisão de oferta](/catalogo-crm/produtos-e-ofertas) em vez de cancelar.\n</Warning>"
+        }
       }
     },
     "/v1/customer-portal-sessions": {
@@ -4176,7 +4310,11 @@
             }
           }
         },
-        "summary": "Create Portal Session"
+        "summary": "Criar sessão do portal do cliente",
+        "description": "Gera um link único e de curta duração para o cliente gerenciar as próprias assinaturas (cancelar, trocar de plano, pedir refund) no portal hospedado da Korbit.",
+        "x-mint": {
+          "content": "<Note>\nO link é de uso único e expira rápido. Envie ao cliente por seu canal de e-mail/chat e nunca armazene o token no seu backend como credencial.\n</Note>"
+        }
       }
     },
     "/v1/customers/{id}/portal-sessions/revoke": {
@@ -4443,7 +4581,8 @@
             }
           }
         },
-        "summary": "Revoke Portal Sessions"
+        "summary": "Revogar sessões do portal",
+        "description": "Revoga todas as sessões de portal ativas (e links não utilizados) do cliente. Use em suspeita de acesso indevido ou troca de e-mail."
       }
     },
     "/v1/subscriptions": {
@@ -4987,7 +5126,8 @@
             }
           }
         },
-        "summary": "List Subscriptions"
+        "summary": "Listar assinaturas",
+        "description": "Lista paginada das assinaturas da sua conta, com filtros por estado e cliente. Use os contadores de [pedidos](/api-reference/clientes-e-pedidos/list-order-views) para dashboards e esta listagem para recorrência detalhada."
       }
     },
     "/v1/subscriptions/{id}": {
@@ -5435,7 +5575,8 @@
             }
           }
         },
-        "summary": "Get Subscription"
+        "summary": "Obter assinatura",
+        "description": "Retorna uma assinatura com estado atual, oferta vigente e próximas cobranças agendadas."
       }
     },
     "/v1/subscriptions/{id}/invoices": {
@@ -5858,7 +5999,8 @@
             }
           }
         },
-        "summary": "List Subscription Invoices"
+        "summary": "Listar faturas da assinatura",
+        "description": "Faturas geradas por ciclo da assinatura, com valor, data e resultado da cobrança — a base da sua conciliação de recorrência."
       }
     },
     "/v1/orders": {
@@ -6436,7 +6578,8 @@
             }
           }
         },
-        "summary": "List Orders"
+        "summary": "Listar pedidos",
+        "description": "Lista paginada de pedidos com filtros por estado, método de pagamento e período. Cada pedido carrega o pagamento associado e o comprador."
       }
     },
     "/v1/test/subscriptions/{id}/simulate": {
@@ -6454,13 +6597,12 @@
                 "additionalProperties": false,
                 "required": [
                   "action",
-                  "expectedVersion"
+                  "expectedVersion",
+                  "invoiceId"
                 ],
                 "properties": {
                   "action": {
-                    "type": "string",
                     "enum": [
-                      "CANCEL_RENEWAL",
                       "FAIL_INVOICE",
                       "PAY_INVOICE"
                     ]
@@ -6473,36 +6615,7 @@
                     "type": "string",
                     "format": "uuid"
                   }
-                },
-                "oneOf": [
-                  {
-                    "properties": {
-                      "action": {
-                        "enum": [
-                          "CANCEL_RENEWAL"
-                        ]
-                      }
-                    },
-                    "not": {
-                      "required": [
-                        "invoiceId"
-                      ]
-                    }
-                  },
-                  {
-                    "properties": {
-                      "action": {
-                        "enum": [
-                          "FAIL_INVOICE",
-                          "PAY_INVOICE"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "invoiceId"
-                    ]
-                  }
-                ]
+                }
               }
             }
           }
@@ -6871,7 +6984,8 @@
             }
           }
         },
-        "summary": "Simulate Test Subscription"
+        "summary": "Simular ciclo de assinatura",
+        "description": "Avança o ciclo de uma assinatura de teste (gera fatura e cobrança simulada) para testar recorrência sem esperar o calendário."
       }
     },
     "/v1/orders/export.csv": {
@@ -6880,7 +6994,7 @@
         "tags": [
           "Clientes e Pedidos"
         ],
-        "description": "Streams every row of the filtered list as CSV (semicolon-separated, UTF-8 with BOM). Read it as a stream; do not buffer it. Refused with 422 EXPORT_TOO_LARGE above 100000 rows.",
+        "description": "Exporta a lista filtrada de pedidos em CSV (streaming). Mesmos filtros da listagem; leia a resposta como stream. Veja [Exportações](/guias/exportacoes).",
         "parameters": [
           {
             "schema": {
@@ -7147,7 +7261,7 @@
             }
           }
         },
-        "summary": "Export Orders Csv"
+        "summary": "Exportar pedidos (CSV)"
       }
     },
     "/v1/customers/export.csv": {
@@ -7156,7 +7270,7 @@
         "tags": [
           "Clientes e Pedidos"
         ],
-        "description": "Streams every row of the filtered list as CSV (semicolon-separated, UTF-8 with BOM). Read it as a stream; do not buffer it. Refused with 422 EXPORT_TOO_LARGE above 100000 rows.",
+        "description": "Exporta a base de clientes filtrada em CSV (streaming), com proteção contra injeção de fórmula.",
         "parameters": [
           {
             "schema": {
@@ -7409,7 +7523,7 @@
             }
           }
         },
-        "summary": "Export Customers Csv"
+        "summary": "Exportar clientes (CSV)"
       }
     },
     "/v1/subscriptions/export.csv": {
@@ -7418,7 +7532,7 @@
         "tags": [
           "Assinaturas"
         ],
-        "description": "Streams every row of the filtered list as CSV (semicolon-separated, UTF-8 with BOM). Read it as a stream; do not buffer it. Refused with 422 EXPORT_TOO_LARGE above 100000 rows.",
+        "description": "Exporta a lista filtrada de assinaturas em CSV (streaming). Células com começo de fórmula são neutralizadas para abrir com segurança em planilhas. Veja [Exportações](/guias/exportacoes).",
         "parameters": [
           {
             "schema": {
@@ -7682,7 +7796,7 @@
             }
           }
         },
-        "summary": "Export Subscriptions Csv"
+        "summary": "Exportar assinaturas (CSV)"
       }
     },
     "/v1/activity": {
@@ -7691,7 +7805,7 @@
         "tags": [
           "Atividade"
         ],
-        "description": "Unified feed of the selected account (sales, payouts, subscriptions, refunds, Pix keys, advances, chargebacks, MED and products), newest first. Dashboard sessions only.",
+        "description": "Feed unificado e cronológico (vendas, payouts, assinaturas, refunds, antecipações, disputas) — base leve para notificações internas e auditoria de integração.",
         "parameters": [
           {
             "schema": {
@@ -8084,7 +8198,7 @@
             }
           }
         },
-        "summary": "List Activity"
+        "summary": "Listar atividade da conta"
       }
     },
     "/v1/orders/counts": {
@@ -8345,7 +8459,8 @@
             }
           }
         },
-        "summary": "Count Order Views"
+        "summary": "Contadores de pedidos",
+        "description": "Contadores agregados (por estado, método, período) para dashboards — mais barato que contar na listagem."
       }
     },
     "/v1/orders/{id}": {
@@ -9455,7 +9570,8 @@
             }
           }
         },
-        "summary": "Get Order"
+        "summary": "Obter pedido",
+        "description": "Detalhe completo do pedido: valores, método de pagamento, comprador e estado atual."
       }
     },
     "/v1/checkout-links/{publicCode}": {
@@ -9473,7 +9589,8 @@
             },
             "in": "path",
             "name": "publicCode",
-            "required": true
+            "required": true,
+            "description": "Código público da oferta (a parte final do link: `korbit.com.br/o/{publicCode}`)."
           }
         ],
         "responses": {
@@ -9718,7 +9835,8 @@
             }
           }
         },
-        "summary": "Resolve Checkout Link"
+        "summary": "Obter link de pagamento",
+        "description": "Retorna os dados públicos de um [link de pagamento](/pagamentos/checkout-links) (oferta, estado de publicação e destino). Use para validar catálogo e sincronizar links com sua base."
       }
     },
     "/v1/checkout-sessions": {
@@ -10113,7 +10231,11 @@
             }
           }
         },
-        "summary": "Create Checkout Session"
+        "summary": "Criar sessão de checkout",
+        "description": "Cria uma sessão de checkout de vida curta (30 min) para uma oferta publicada, com os dados do comprador já preenchidos — o comprador vai direto ao pagamento. A sessão resultante é a mesma usada pelo [link de pagamento](/pagamentos/checkout-links); o valor é fixado server-side a partir do snapshot da oferta.",
+        "x-mint": {
+          "content": "<Note>\nO token da sessão é entregue uma única vez na resposta e expira em 30 minutos. A página de checkout hospedada consome esse token — sua aplicação normalmente só precisa redirecionar o comprador.\n</Note>"
+        }
       }
     },
     "/v1/customers": {
@@ -10137,22 +10259,26 @@
                     "type": "string",
                     "format": "email",
                     "minLength": 3,
-                    "maxLength": 320
+                    "maxLength": 320,
+                    "description": "E-mail único na sua base — usado no portal do cliente e nas cobranças recorrentes."
                   },
                   "externalId": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 128
+                    "maxLength": 128,
+                    "description": "Seu identificador interno do cliente para sincronização com sua base."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "Nome completo do cliente."
                   },
                   "phone": {
                     "type": "string",
                     "minLength": 5,
-                    "maxLength": 32
+                    "maxLength": 32,
+                    "description": "Telefone do cliente (formato E.164 recomendado)."
                   }
                 }
               }
@@ -10924,7 +11050,8 @@
             }
           }
         },
-        "summary": "Create Customer"
+        "summary": "Criar cliente",
+        "description": "Cadastra um cliente na sua base Korbit. O e-mail é o identificador natural: duplicado retorna `409 CUSTOMER_EMAIL_TAKEN`. Compradores que já pagaram por link também aparecem aqui automaticamente."
       },
       "get": {
         "operationId": "listCommerceCustomers",
@@ -11464,7 +11591,8 @@
             }
           }
         },
-        "summary": "List Customers"
+        "summary": "Listar clientes",
+        "description": "Lista paginada com busca por nome/e-mail. Paginação por cursor (`cursor` + `limit`)."
       }
     },
     "/v1/customers/{id}": {
@@ -11930,7 +12058,8 @@
             }
           }
         },
-        "summary": "Get Customer"
+        "summary": "Obter cliente",
+        "description": "Retorna o cliente com histórico resumido de compras na sua conta."
       },
       "patch": {
         "operationId": "updateCommerceCustomer",
@@ -12536,7 +12665,8 @@
             }
           }
         },
-        "summary": "Update Customer"
+        "summary": "Atualizar cliente",
+        "description": "Atualiza nome, e-mail e dados de contato. Enviar somente os campos que mudam (patch parcial)."
       }
     },
     "/v1/customers/{id}/archive": {
@@ -12840,7 +12970,8 @@
             }
           }
         },
-        "summary": "Archive Customer"
+        "summary": "Arquivar cliente",
+        "description": "Remove o cliente das listagens sem apagar o histórico de pedidos. Operação reversível via suporte."
       }
     },
     "/v1/products": {
@@ -12863,12 +12994,14 @@
                 "properties": {
                   "description": {
                     "type": "string",
-                    "maxLength": 4000
+                    "maxLength": 4000,
+                    "description": "Descrição livre exibida ao comprador."
                   },
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "Nome do produto exibido na página de checkout."
                   },
                   "productType": {
                     "type": "string",
@@ -13316,7 +13449,8 @@
             }
           }
         },
-        "summary": "Create Product"
+        "summary": "Criar produto",
+        "description": "O produto é a \"ficha\" do que você vende. Preço e oferta são entidades separadas e versionadas — crie o produto primeiro, depois [preço](#) e [oferta](#)."
       },
       "get": {
         "operationId": "listCommerceProducts",
@@ -13722,7 +13856,8 @@
             }
           }
         },
-        "summary": "List Products"
+        "summary": "Listar produtos",
+        "description": "Lista paginada do catálogo com estado de cada produto (ativo, arquivado)."
       }
     },
     "/v1/products/{id}": {
@@ -14042,7 +14177,8 @@
             }
           }
         },
-        "summary": "Get Product"
+        "summary": "Obter produto",
+        "description": "Detalhe do produto, incluindo preços e ofertas vigentes."
       },
       "patch": {
         "operationId": "updateCommerceProduct",
@@ -14504,7 +14640,8 @@
             }
           }
         },
-        "summary": "Update Product"
+        "summary": "Atualizar produto",
+        "description": "Atualiza nome, descrição e referência externa (patch parcial)."
       }
     },
     "/v1/products/{id}/archive": {
@@ -14808,7 +14945,8 @@
             }
           }
         },
-        "summary": "Archive Product"
+        "summary": "Arquivar produto",
+        "description": "Arquiva o produto: nenhuma nova oferta pode ser criada e o produto sai das listagens. Links de ofertas já publicadas deixam de vender."
       }
     },
     "/v1/products/{id}/tracking-integrations": {
@@ -15069,7 +15207,8 @@
             }
           }
         },
-        "summary": "Get Product Tracking"
+        "summary": "Obter configuração de tracking",
+        "description": "Pixels configurados no produto, sem nunca expor credenciais (apenas `hasAccessToken`)."
       },
       "put": {
         "operationId": "replaceCommerceProductTracking",
@@ -15437,7 +15576,11 @@
             }
           }
         },
-        "summary": "Replace Product Tracking"
+        "summary": "Configurar pixels de conversão",
+        "description": "Define os pixels de anúncio do produto (Meta, TikTok, Google). Credenciais (access tokens) são armazenadas criptografadas e nunca retornadas — a resposta só expõe booleanos. Veja [Tracking e pixels](/catalogo-crm/tracking).",
+        "x-mint": {
+          "content": "<Warning>\nEnvie o access token apenas na criação/troca de credencial. Um PUT sem token mantém o token existente; para revogar, use o campo dedicado.\n</Warning>"
+        }
       }
     },
     "/v1/products/{id}/tracking-events": {
@@ -15753,7 +15896,8 @@
             }
           }
         },
-        "summary": "List Product Tracking Events"
+        "summary": "Listar eventos de tracking",
+        "description": "Eventos de conversão reportados pelo servidor para o produto, com parâmetros de atribuição — base para conferir a atribuição das suas campanhas."
       }
     },
     "/v1/products/{id}/image-uploads": {
@@ -16435,7 +16579,8 @@
             }
           }
         },
-        "summary": "Create Product Image Upload"
+        "summary": "Iniciar upload de imagem",
+        "description": "Solicita um upload pré-assinado para a imagem do produto. Envie o arquivo direto ao storage com o body **exato** declarado (tipo, tamanho e checksum são verificados). Formatos: JPEG, PNG, WebP — até 2 MiB."
       }
     },
     "/v1/products/{id}/image-uploads/{uploadId}/complete": {
@@ -16886,7 +17031,8 @@
             }
           }
         },
-        "summary": "Complete Product Image Upload"
+        "summary": "Concluir upload de imagem",
+        "description": "Confirma o upload: a Korbit valida o objeto **armazenado** (tipo, tamanho, checksum). Divergência entre o declarado e o enviado rejeita o upload."
       }
     },
     "/v1/products/{id}/image-uploads/{uploadId}": {
@@ -17249,7 +17395,8 @@
             }
           }
         },
-        "summary": "Get Product Image Upload"
+        "summary": "Consultar upload de imagem",
+        "description": "Estado do upload (pendente, validado, rejeitado) e URL pública quando concluído."
       }
     },
     "/v1/products/{id}/prices": {
@@ -17815,7 +17962,11 @@
             }
           }
         },
-        "summary": "Create Price Version"
+        "summary": "Criar versão de preço",
+        "description": "Cria uma **nova versão** de preço para o produto — o histórico de preços anteriores é preservado. Valores sempre em centavos (BRL).",
+        "x-mint": {
+          "content": "<Tip>\nNunca edite um preço no lugar: crie uma versão nova. Assim, pedidos antigos continuam explicáveis e o audit trail fica íntegro.\n</Tip>"
+        }
       },
       "get": {
         "operationId": "listCommercePriceVersions",
@@ -18107,7 +18258,8 @@
             }
           }
         },
-        "summary": "List Price Versions"
+        "summary": "Listar versões de preço",
+        "description": "Histórico completo de preços do produto, mais recente primeiro."
       }
     },
     "/v1/products/{id}/offers": {
@@ -18168,7 +18320,8 @@
                   },
                   "priceId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "description": "Versão de preço vigente da oferta."
                   }
                 }
               }
@@ -18793,7 +18946,8 @@
             }
           }
         },
-        "summary": "Create Offer"
+        "summary": "Criar oferta",
+        "description": "Une produto + preço e define como o comprador pode pagar: métodos aceitos, parcelamento máximo e cadência (avulsa ou recorrente). Só ofertas **publicadas** vendem."
       },
       "get": {
         "operationId": "listCommerceOffers",
@@ -19138,7 +19292,8 @@
             }
           }
         },
-        "summary": "List Offers"
+        "summary": "Listar ofertas do produto",
+        "description": "Todas as ofertas do produto, com estado (rascunho, publicada, arquivada)."
       }
     },
     "/v1/offers/{id}/revisions": {
@@ -19824,7 +19979,8 @@
             }
           }
         },
-        "summary": "Revise Offer"
+        "summary": "Criar revisão da oferta",
+        "description": "Cria uma revisão da oferta para alterar condições com histórico preservado. A revisão só passa a valer quando [publicada](#)."
       }
     },
     "/v1/offers/{id}": {
@@ -20168,7 +20324,8 @@
             }
           }
         },
-        "summary": "Get Offer"
+        "summary": "Obter oferta",
+        "description": "Detalhe da oferta: preço vigente, métodos de pagamento e estado de publicação."
       },
       "patch": {
         "operationId": "updateCommerceOffer",
@@ -20655,7 +20812,8 @@
             }
           }
         },
-        "summary": "Update Offer"
+        "summary": "Atualizar oferta",
+        "description": "Ajusta configurações da oferta (métodos, parcelamento). Mudanças de preço vão por [nova versão de preço](#)."
       }
     },
     "/v1/offers/{id}/publish": {
@@ -21097,7 +21255,8 @@
             }
           }
         },
-        "summary": "Publish Offer"
+        "summary": "Publicar oferta",
+        "description": "Publica a oferta (ou revisão) e gera o `publicCode` do link de pagamento. Só ofertas publicadas aceitam checkout."
       }
     },
     "/v1/offers/{id}/archive": {
@@ -21401,7 +21560,8 @@
             }
           }
         },
-        "summary": "Archive Offer"
+        "summary": "Arquivar oferta",
+        "description": "Tira a oferta do ar. Sessões de checkout abertas antes do arquivamento ainda completam dentro do TTL (30 min)."
       }
     },
     "/v1/balance": {
@@ -21564,7 +21724,8 @@
             }
           }
         },
-        "summary": "Get Balance"
+        "summary": "Consultar saldo",
+        "description": "Saldo atual da conta: disponível para saque e valores a liberar. O disponível é a fonte de verdade para [payouts](/saldo-saques/payout-requests)."
       }
     },
     "/v1/balance/breakdown": {
@@ -21761,7 +21922,8 @@
             }
           }
         },
-        "summary": "Get Balance Breakdown"
+        "summary": "Consultar breakdown do saldo",
+        "description": "Composição detalhada do saldo: disponível, pendente de liberação e reservas (refunds/disputas em andamento)."
       }
     },
     "/v1/funds/releases": {
@@ -22095,7 +22257,8 @@
             }
           }
         },
-        "summary": "List Funds Releases"
+        "summary": "Listar liberações de recursos",
+        "description": "Liberações passadas e futuras com valor e data. Uma liberação pode estar bloqueada por eventos abertos (refunds, disputas) — os motivos aparecem no item."
       }
     },
     "/v1/funds/releases/calendar": {
@@ -22334,7 +22497,8 @@
             }
           }
         },
-        "summary": "Get Funds Release Calendar"
+        "summary": "Calendário de liberações",
+        "description": "Datas futuras de liberação e valores previstos por data — projeção de caixa."
       }
     },
     "/v1/funds/releases/summary": {
@@ -22666,7 +22830,8 @@
             }
           }
         },
-        "summary": "Get Funds Release Summary"
+        "summary": "Resumo de liberações",
+        "description": "Totais de liberações por período (dia, semana, mês) para relatórios e previsibilidade."
       }
     },
     "/v1/advance/receivables": {
@@ -22921,7 +23086,8 @@
             }
           }
         },
-        "summary": "List Advance Receivables"
+        "summary": "Listar recebíveis",
+        "description": "Recebíveis futuros da sua conta com valores e datas de liberação previstas — o universo elegível para antecipação."
       }
     },
     "/v1/advance/eligibility": {
@@ -23123,7 +23289,8 @@
             }
           }
         },
-        "summary": "Get Advance Eligibility"
+        "summary": "Verificar elegibilidade",
+        "description": "Informa se sua conta e os recebíveis atendem aos critérios de risco para antecipar (recebíveis já usados como garantia, disputas abertas e histórico afetam a análise)."
       }
     },
     "/v1/advance/quotes": {
@@ -23502,7 +23669,11 @@
             }
           }
         },
-        "summary": "Create Advance Quote"
+        "summary": "Cotar antecipação",
+        "description": "Gera a cotação: valor bruto, taxa de desconto e valor líquido a receber. A cotação tem validade própria — usar depois de expirar retorna `409 ADVANCE_QUOTE_EXPIRED`.",
+        "x-mint": {
+          "content": "<Tip>\nA taxa depende do tempo restante até a liberação: antecipar mais perto da data custa menos. Compare cotações em datas diferentes antes de decidir.\n</Tip>"
+        }
       }
     },
     "/v1/advance/requests": {
@@ -24021,7 +24192,8 @@
             }
           }
         },
-        "summary": "Create Advance Request"
+        "summary": "Solicitar antecipação",
+        "description": "Vincula a cotação e cria a solicitação, que passa por revisão da Korbit antes da liberação do líquido ao saldo. O recebível fica reservado como garantia — não pode sustentar outra antecipação."
       },
       "get": {
         "operationId": "listAdvanceRequests",
@@ -24315,7 +24487,8 @@
             }
           }
         },
-        "summary": "List Advance Requests"
+        "summary": "Listar antecipações",
+        "description": "Solicitações da conta com estado (em análise, aprovada, liberada, recusada, quitada)."
       }
     },
     "/v1/advance/requests/{id}": {
@@ -24576,7 +24749,8 @@
             }
           }
         },
-        "summary": "Get Advance Request"
+        "summary": "Obter antecipação",
+        "description": "Detalhe da solicitação: recebíveis vinculados, cotação aplicada e estado atual."
       }
     },
     "/v1/payout-beneficiaries": {
@@ -24780,7 +24954,8 @@
             }
           }
         },
-        "summary": "List Payout Beneficiaries"
+        "summary": "Listar beneficiários",
+        "description": "Beneficiários cadastrados com chaves mascaradas, estado e qual é a chave principal."
       },
       "post": {
         "operationId": "createPayoutBeneficiary",
@@ -24802,7 +24977,8 @@
                   "pixKey": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 320
+                    "maxLength": 320,
+                    "description": "A chave PIX em si — validada no cadastro (`403`/`422 INVALID_PIX_KEY` quando inválida)."
                   },
                   "pixKeyType": {
                     "type": "string",
@@ -24812,7 +24988,8 @@
                       "EMAIL",
                       "PHONE",
                       "RANDOM"
-                    ]
+                    ],
+                    "description": "Tipo da chave informada: CPF, CNPJ, EMAIL, PHONE ou EVP (chave aleatória)."
                   }
                 }
               }
@@ -25282,7 +25459,11 @@
             }
           }
         },
-        "summary": "Create Payout Beneficiary"
+        "summary": "Cadastrar beneficiário PIX",
+        "description": "Cadastra a chave PIX de destino dos saques. Tipos aceitos: CPF, CNPJ, e-mail, telefone e chave aleatória (EVP). A chave é armazenada **criptografada** e sempre retornada mascarada.",
+        "x-mint": {
+          "content": "<Warning>\nBeneficiário é destino de dinheiro: confirme o titular antes de cadastrar. Mudanças de beneficiário passam pelo fluxo de verificação da Korbit.\n</Warning>"
+        }
       }
     },
     "/v1/payout-beneficiaries/{id}/primary": {
@@ -25510,7 +25691,8 @@
             }
           }
         },
-        "summary": "Set Primary Payout Beneficiary"
+        "summary": "Definir beneficiário principal",
+        "description": "Marca o beneficiário como destino padrão de novos saques."
       }
     },
     "/v1/payout-beneficiaries/{id}": {
@@ -25738,7 +25920,8 @@
             }
           }
         },
-        "summary": "Disable Payout Beneficiary"
+        "summary": "Desabilitar beneficiário",
+        "description": "Desabilita a chave para novos saques. Saques já aprovados seguem as regras de revalidação na execução."
       }
     },
     "/v1/payout-requests": {
@@ -26016,7 +26199,8 @@
             }
           }
         },
-        "summary": "List Payout Requests"
+        "summary": "Listar payouts",
+        "description": "Saques da conta com estados e tarifas. Paginação por cursor."
       },
       "post": {
         "operationId": "createPayoutRequest",
@@ -26042,7 +26226,8 @@
                   },
                   "beneficiaryId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "description": "Id do beneficiário (chave PIX de destino)."
                   }
                 }
               }
@@ -26538,7 +26723,11 @@
             }
           }
         },
-        "summary": "Create Payout Request"
+        "summary": "Solicitar payout",
+        "description": "Solicita a transferência do saldo disponível para o beneficiário. O valor é **reservado** transacionalmente no momento da solicitação — duas solicitações concorrentes nunca excedem o disponível. A tarifa é calculada e devolvida no breakdown da resposta.",
+        "x-mint": {
+          "content": "<Note>\nSaques passam por aprovação com verificação humana na Korbit antes da execução PIX — não são instantâneos. Acompanhe por `payout.updated.v1` e `GET /v1/payout-requests/{id}`.\n</Note>"
+        }
       }
     },
     "/v1/payout-requests/{id}": {
@@ -26780,7 +26969,8 @@
             }
           }
         },
-        "summary": "Get Payout Request"
+        "summary": "Obter payout",
+        "description": "Estado atual do saque: reserva, aprovação, execução PIX (com comprovante quando executado) e conciliação."
       }
     },
     "/v1/refunds": {
@@ -26809,12 +26999,14 @@
                   },
                   "paymentIntentId": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "uuid",
+                    "description": "Payment intent de origem do refund."
                   },
                   "reason": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 1000
+                    "maxLength": 1000,
+                    "description": "Motivo operacional do refund (ex.: `produto_nao_entregue`)."
                   }
                 }
               }
@@ -27674,7 +27866,11 @@
             }
           }
         },
-        "summary": "Create Refund"
+        "summary": "Criar refund",
+        "description": "Solicita a devolução de parte ou do total de um pagamento. O valor é validado contra o saldo restante (refunds acumulados nunca excedem o total pago) e **reservado** antes da execução — se a execução falhar, a reserva é revertida integralmente.",
+        "x-mint": {
+          "content": "<Note>\nO caminho de aprovação (imediato, revisão ou política de risco) depende do pagamento, do valor e do histórico — a resposta indica o que aconteceu. Casos com prazo de resposta chegam como `refund.requested.v1`.\n</Note>"
+        }
       }
     },
     "/v1/refund-cases/{caseId}/merchant-approve": {
@@ -28566,7 +28762,8 @@
             }
           }
         },
-        "summary": "Approve Customer Refund As"
+        "summary": "Aprovar refund",
+        "description": "Concorda com o devolução solicitada pelo comprador. Respeite o prazo (`review_deadline_at`) — sem resposta, aplica-se a política padrão da Korbit."
       }
     },
     "/v1/refund-cases/{caseId}/merchant-contest": {
@@ -29470,7 +29667,8 @@
             }
           }
         },
-        "summary": "Contest Customer Refund As"
+        "summary": "Contestar refund",
+        "description": "Contesta a devolução com sua argumentação e evidências. A contestação segue para revisão da Korbit com o comprador."
       }
     },
     "/v1/refund-cases/{caseId}/merchant-responses": {
@@ -30424,7 +30622,8 @@
             }
           }
         },
-        "summary": "Add Refund Response"
+        "summary": "Responder ao caso",
+        "description": "Envia informações/evidências adicionais solicitadas durante a análise do caso de refund."
       }
     },
     "/v1/refund-cases": {
@@ -30955,7 +31154,8 @@
             }
           }
         },
-        "summary": "List Refund Cases"
+        "summary": "Listar casos de refund",
+        "description": "Casos de revisão abertos e encerrados, com prazo de resposta do merchant quando aplicável."
       }
     },
     "/v1/refund-cases/{caseId}": {
@@ -31548,7 +31748,8 @@
             }
           }
         },
-        "summary": "Get Refund Case"
+        "summary": "Obter caso de refund",
+        "description": "Detalhe do caso: pagamento, valores, prazo de resposta e histórico de interações."
       }
     },
     "/v1/webhook-subscriptions": {
@@ -31590,13 +31791,15 @@
                         "merchant.kyc.updated.v1",
                         "merchant.status.updated.v1"
                       ]
-                    }
+                    },
+                    "description": "Tipos de evento que serão entregues — assine só o que sua integração consome."
                   },
                   "url": {
                     "type": "string",
                     "format": "uri",
                     "minLength": 8,
-                    "maxLength": 2000
+                    "maxLength": 2000,
+                    "description": "Endpoint HTTPS público (endereços privados são recusados)."
                   }
                 }
               }
@@ -32042,7 +32245,11 @@
             }
           }
         },
-        "summary": "Create Webhook Subscription"
+        "summary": "Criar assinatura de webhook",
+        "description": "Registra seu endpoint HTTPS para receber os [tipos de evento](/webhooks/catalogo-de-eventos) escolhidos. O segredo de assinatura (`whsec_…`) é exibido uma única vez no painel — é com ele que você verifica cada entrega.",
+        "x-mint": {
+          "content": "<Note>\nUma assinatura por URL. Depois de criar, valide a [verificação de assinatura](/webhooks/assinatura) no sandbox antes de operar em produção.\n</Note>"
+        }
       },
       "get": {
         "operationId": "listMerchantWebhookSubscriptions",
@@ -32322,7 +32529,8 @@
             }
           }
         },
-        "summary": "List Webhook Subscriptions"
+        "summary": "Listar assinaturas de webhook",
+        "description": "Assinaturas da conta com URL, tipos de evento e estado. Alerta recomendado para estado `ERROR` (entregas esgotadas)."
       }
     },
     "/v1/webhook-subscriptions/{id}/disable": {
@@ -32779,7 +32987,8 @@
             }
           }
         },
-        "summary": "Disable Webhook Subscription"
+        "summary": "Desabilitar assinatura de webhook",
+        "description": "Interrompe a entrega imediatamente e preserva a assinatura para reativação no painel."
       }
     }
   },
@@ -32792,137 +33001,6 @@
       }
     },
     "schemas": {
-      "def-11": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "amount",
-          "card",
-          "currency",
-          "paymentMethod"
-        ],
-        "properties": {
-          "amount": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "card": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "installments",
-              "payer",
-              "paymentMethodId",
-              "paymentMethodType",
-              "token"
-            ],
-            "properties": {
-              "deviceSessionId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 256,
-                "pattern": "^[A-Za-z0-9_-]+$"
-              },
-              "installments": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 24
-              },
-              "issuerId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 64
-              },
-              "payer": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "email"
-                ],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "maxLength": 254
-                  },
-                  "identification": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "number",
-                      "type"
-                    ],
-                    "properties": {
-                      "number": {
-                        "type": "string",
-                        "minLength": 11,
-                        "maxLength": 18,
-                        "pattern": "^[0-9]+$"
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "CPF",
-                          "CNPJ"
-                        ]
-                      }
-                    }
-                  }
-                }
-              },
-              "paymentMethodId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 64
-              },
-              "paymentMethodType": {
-                "type": "string",
-                "enum": [
-                  "credit_card",
-                  "debit_card"
-                ]
-              },
-              "token": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 2048
-              }
-            }
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "BRL"
-            ]
-          },
-          "description": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "externalReference": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "metadata": {
-            "type": "object",
-            "maxProperties": 20,
-            "additionalProperties": {
-              "type": "string",
-              "maxLength": 500
-            }
-          },
-          "paymentMethod": {
-            "type": "string",
-            "enum": [
-              "CARD"
-            ]
-          }
-        },
-        "title": "CreateCardPaymentIntentRequest"
-      },
       "def-2": {
         "type": "object",
         "additionalProperties": false,
@@ -33024,58 +33102,6 @@
           }
         },
         "title": "ApiKeyMetadata"
-      },
-      "def-61": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "amount",
-          "currency",
-          "paymentMethod"
-        ],
-        "properties": {
-          "amount": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "BRL"
-            ]
-          },
-          "description": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "expiresInSeconds": {
-            "type": "integer",
-            "minimum": 300,
-            "maximum": 86400
-          },
-          "externalReference": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 128
-          },
-          "metadata": {
-            "type": "object",
-            "maxProperties": 20,
-            "additionalProperties": {
-              "type": "string",
-              "maxLength": 500
-            }
-          },
-          "paymentMethod": {
-            "type": "string",
-            "enum": [
-              "PIX"
-            ]
-          }
-        },
-        "title": "CreatePixPaymentIntentRequest"
       }
     }
   }

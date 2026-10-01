@@ -1,0 +1,34 @@
+---
+title: "Checkout — Referência"
+description: "O modelo da sessão de checkout e dos links de pagamento públicos."
+---
+
+O **checkout** é onde o comprador conclui a compra. A Korbit oferece dois caminhos que compartilham o mesmo motor:
+
+1. **Link de pagamento** — URL pública por [oferta](/catalogo-crm/produtos-e-ofertas), pronta para compartilhar. O `publicCode` identifica a oferta; a página hospedada cuida de tudo.
+2. **Sessão de checkout via API** — a mesma sessão, criada por API com dados do comprador pré-preenchidos (útil quando você já conhece o comprador e quer pular etapas).
+
+## Modelo da sessão
+
+| Propriedade | Comportamento |
+| --- | --- |
+| Token | Entregue uma única vez, escopo único, **TTL de 30 min** |
+| Valor | Snapshot server-side do preço da oferta + bumps selecionados — o comprador não altera valores |
+| Transporte | O token vai no **fragmento** da URL (`#session=…`) e é removido do endereço no carregamento |
+| Retentativa | Nova tentativa de pagamento dentro da mesma sessão, com tentativa anterior em estado final |
+
+## Segurança do design
+
+O comprador nunca lida com sua chave de API: a sessão é autenticada pelo token efêmero HMAC-assinado. Os endpoints que o navegador do comprador consome (resolver, status, submit) são **públicos e intencionalmente fora desta referência** — sua integração normalmente não os chama.
+
+```mermaid
+flowchart LR
+  O[Oferta publicada] --> L[Link /o/{publicCode}]
+  L --> S[Sessão de checkout 30 min]
+  S --> P[PIX] & K[Cartão + 3DS]
+  P & K --> D[Pedido + webhooks]
+```
+
+<Tip>
+Para pré-preencher comprador e checkout sem página intermediária, use `POST /v1/checkout-sessions` com o cliente já cadastrado na sua base.
+</Tip>

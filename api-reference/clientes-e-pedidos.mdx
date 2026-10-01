@@ -1,0 +1,33 @@
+---
+title: "Clientes e Pedidos — Referência"
+description: "A base de compradores, os pedidos gerados por cada venda e o portal do cliente."
+---
+
+## Clientes
+
+O cliente agrupa as compras de uma pessoa na sua conta Korbit:
+
+| Campo | Descrição |
+| --- | --- |
+| `email` | Identificador natural — único na sua base (`409 CUSTOMER_EMAIL_TAKEN` em duplicidade) |
+| `name` / `taxId` | Dados do comprador, usados no checkout e no portal |
+| `status` | Ativo ou arquivado (arquivar não apaga histórico) |
+
+Compradores que pagam por [link](/api-reference/checkout) sem cadastro prévio aparecem automaticamente aqui.
+
+## Pedidos
+
+Cada venda gera um pedido, ligando comprador, pagamento e oferta:
+
+| Campo | Descrição |
+| --- | --- |
+| `status` | Estado do pedido (espelha o pagamento: pago, expirado, recusado…) |
+| `amount` | Valor total em centavos, incluindo order bumps |
+| `paymentMethod` | `PIX` ou `CARD` |
+| `customer` | Comprador associado |
+
+Para dashboards, prefira os **contadores agregados** (`GET /v1/orders/counts`) à contagem na listagem — e use [export.csv](/guias/exportacoes) para recortes em massa.
+
+## Portal do cliente
+
+O portal é self-service do comprador (cancelar, trocar plano, pedir refund). O acesso é mediado por **sessões** que você cria por API (`POST /v1/customer-portal-sessions`), revoga por cliente e nunca armazena como credencial — links únicos de curta duração.

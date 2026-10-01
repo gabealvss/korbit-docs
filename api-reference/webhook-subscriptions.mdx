@@ -1,0 +1,26 @@
+---
+title: "Webhook Subscriptions — Referência"
+description: "O modelo de assinatura: URL, tipos de evento, estado e o segredo de assinatura."
+---
+
+Uma **assinatura de webhook** diz à Korbit: *para esta URL, entregue estes tipos de evento*. Os eventos em si (payload, assinatura, retries) estão detalhados na [tab de Webhooks](/webhooks/visao-geral) — aqui está o modelo da assinatura.
+
+## Modelo
+
+| Propriedade | Comportamento |
+| --- | --- |
+| `url` | Endpoint **HTTPS público** — endereços privados são recusados no cadastro |
+| `eventTypes` | Tipos versionados (`.v1`) que serão entregues — assine só o que consome |
+| `environment` | `live` ou `test` — assinaturas de sandbox não existem em produção |
+| `status` | `ACTIVE`, `PENDING`, `ERROR` (entregas esgotadas) ou `DISABLED` |
+| Segredo | `whsec_…` exibido **uma única vez** no painel — usado na [verificação](/webhooks/assinatura) |
+
+## Regras
+
+- **Uma assinatura por URL** — duplicidade retorna `409 WEBHOOK_SUBSCRIPTION_ALREADY_EXISTS`.
+- Estados de `ERROR` param a entrega de novos eventos até recuperação — configure alerta monitorando esta listagem.
+- `disable` interrompe a entrega na hora e preserva a assinatura para reativação no painel.
+
+## Qual assinatura criar?
+
+Comece com o essencial de vendas: `payment.succeeded.v1`, `payment.failed.v1`, `refund.requested.v1`. Adicione `payout.*` se integrar saques e `dispute.*` se tratar contestações no seu sistema. O catálogo completo está em [Catálogo de eventos](/webhooks/catalogo-de-eventos).

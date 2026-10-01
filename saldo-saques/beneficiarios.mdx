@@ -13,13 +13,12 @@ curl -X POST https://api.korbit.com.br/v1/payout-beneficiaries \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
   -d '{
-    "pixKey": "seu-cpf-ou-cnpj-ou-email-ou-aleatoria",
-    "holderName": "Nome do titular",
-    "holderTaxId": "000.000.000-00"
+    "pixKey": "sua-chave-pix",
+    "pixKeyType": "CPF"
   }'
 ```
 
-Tipos de chave aceitos: CPF, CNPJ, e-mail, telefone e chave aleatória (EVP) — validados no cadastro (`403`/`422 INVALID_PIX_KEY` quando inválida).
+Tipos de chave aceitos: CPF, CNPJ, e-mail, telefone e chave aleatória (EVP) — validados no cadastro (`INVALID_PIX_KEY` quando inválida).
 
 ## Gerenciar
 

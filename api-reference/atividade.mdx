@@ -1,0 +1,16 @@
+---
+title: "Atividade — Referência"
+description: "O feed unificado de eventos da conta."
+---
+
+`GET /v1/activity` é um **feed cronológico** de tudo que acontece na conta: vendas, payouts, assinaturas, refunds, antecipações e disputas, do mais recente para o mais antigo.
+
+## Para que serve
+
+- **Notificações internas** — um único endpoint para montar um "mural" da operação no seu admin.
+- **Auditoria de integração** — conferir o que aconteceu e quando, sem consultar cada domínio.
+- **Onboarding de suporte** — contexto rápido do histórico de um cliente/período.
+
+## O que não substitui
+
+O feed é leve e otimizado para leitura humana: **não** use como fonte de verdade financeira nem como fila de processamento — para isso existem os endpoints por domínio (pedidos, payouts, refunds) e os [webhooks](/webhooks/visao-geral).
