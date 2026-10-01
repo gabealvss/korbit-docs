@@ -19,6 +19,10 @@
         "pages": ["introduction"]
       },
       {
+        "tab": "A Plataforma",
+        "pages": ["plataforma/visao-geral"]
+      },
+      {
         "tab": "Guias",
         "groups": [
           {
