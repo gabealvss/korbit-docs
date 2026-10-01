@@ -295,7 +295,7 @@
   "navbar": {
     "primary": {
       "type": "button",
-      "label": "Dashvoard",
+      "label": "Dashboard",
       "href": "https://app.korbit.com.br"
     }
   },
