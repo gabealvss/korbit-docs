@@ -1,0 +1,69 @@
+---
+title: "Catálogo de eventos"
+description: "Tipos de evento, payload e semântica de cada webhook da Korbit."
+---
+
+Os tipos de evento são versionados (`*.v1`) — mudanças incompatíveis geram uma nova versão, nunca quebram seu consumidor. Você escolhe explicitamente os tipos que quer receber ao criar a assinatura.
+
+## Pagamentos
+
+| Evento | Quando dispara |
+| --- | --- |
+| `payment.created.v1` | Payment intent criado |
+| `payment.requires_action.v1` | Ação do comprador pendente (PIX gerado ou 3DS) |
+| `payment.succeeded.v1` | Pagamento confirmado pelo provedor |
+| `payment.failed.v1` | Recusado ou expirado |
+
+## Refunds
+
+| Evento | Quando dispara |
+| --- | --- |
+| `refund.requested.v1` | Refund solicitado (inclui prazo de resposta quando aplicável) |
+| `refund.updated.v1` | Estado do refund/caso mudou |
+| `refund.succeeded.v1` | Refund liquidado |
+
+## Saques
+
+| Evento | Quando dispara |
+| --- | --- |
+| `payout.requested.v1` | Payout solicitado (valor reservado) |
+| `payout.updated.v1` | Aprovação, execução, reconciliação ou falha |
+
+## Disputas
+
+| Evento | Quando dispara |
+| --- | --- |
+| `dispute.opened.v1` | Chargeback/med aberto pelo comprador |
+| `dispute.updated.v1` | Evidência, decisão ou estado mudou |
+
+## Conta
+
+| Evento | Quando dispara |
+| --- | --- |
+| `merchant.kyc.updated.v1` | Progresso da verificação KYC/KYB |
+| `merchant.status.updated.v1` | Status/capacidades da conta mudaram |
+
+## Formato do payload
+
+```json payment.succeeded.v1
+{
+  "type": "payment.succeeded.v1",
+  "timestamp": "2026-10-01T12:00:00.000Z",
+  "data": {
+    "id": "pi_…",
+    "amount_minor": 14990,
+    "currency": "BRL",
+    "payment_intent_id": "pi_…",
+    "payment_method": "PIX",
+    "status": "SUCCEEDED"
+  }
+}
+```
+
+- Campos são `snake_case`; `amount_minor` em centavos (BRL).
+- O payload contém o **snapshot relevante do evento** — campos presentes variam por tipo (ex.: `refund_initiator` e `review_deadline_at` em eventos de refund).
+- O envelope completo (com `type`, `timestamp` e assinatura) segue o padrão Svix — a verificação produz o objeto acima.
+
+<Note>
+Este catálogo é a fonte oficial dos tipos versionados. Novos eventos podem ser adicionados mantendo a versão; assine só o que sua integração consome.
+</Note>

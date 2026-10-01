@@ -1,0 +1,49 @@
+---
+title: "Payouts (saques)"
+description: "Solicitação de saques para chaves PIX e ciclo de aprovação."
+---
+
+Um **payout** move o saldo disponível da sua conta Korbit para uma [chave PIX de beneficiário](/saldo-saques/beneficiarios) cadastrada.
+
+## Solicitar
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/payout-requests \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amountMinor": 150000,
+    "currency": "BRL",
+    "beneficiaryId": "…"
+  }'
+```
+
+No momento da solicitação:
+
+1. A Korbit verifica o saldo disponível e **reserva** o valor — a reserva é transacional: requisições concorrentes nunca ultrapassam o disponível.
+2. A tarifa do saque é calculada e refletida no breakdown da resposta.
+
+## Ciclo de aprovação
+
+Saques passam por aprovação com **verificação humana** na Korbit (maker-checker: quem aprova não executa, quem executa não reconcilia):
+
+| Estado | Significado |
+| --- | --- |
+| `PENDING_REVIEW` | Aguardando revisão |
+| `APPROVED` | Aprovado para execução |
+| `EXECUTED` | Enviado ao PIX — com comprovante |
+| `RECONCILED` | Conciliado com o provedor |
+| `REJECTED` / `FAILED` | Recusado ou falhou na execução |
+
+Acompanhe pelo polling (`GET /v1/payout-requests/{id}`) e pelos eventos `payout.requested.v1` / `payout.updated.v1`.
+
+## Expectativas
+
+- **Prazo**: a execução é feita em horário comercial; saques não são instantâneos por padrão.
+- **Mínimo**: há valor mínimo por saque (ex.: R$ 10,00 = `1000` centavos) e limite de solicitações por minuto (rate limit dedicado).
+- **Falha de execução**: se o PIX falhar, o valor retorna ao disponível e o estado registra a falha com motivo — nada é perdido silenciosamente.
+
+<Note>
+Precisa do dinheiro antes da liberação dos recebíveis? Veja [Antecipações](/antecipacoes/visao-geral).
+</Note>

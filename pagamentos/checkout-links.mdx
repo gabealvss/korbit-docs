@@ -1,0 +1,44 @@
+---
+title: "Checkout por link"
+description: "Links de pagamento hospedados: o caminho mais rápido para vender sem construir checkout."
+---
+
+O **link de pagamento** é uma URL pública por [oferta](/catalogo-crm/produtos-e-ofertas), hospedada pela Korbit, onde o comprador conclui a compra: preenche os dados, escolhe PIX ou cartão (com 3DS e parcelamento) e recebe a confirmação — inclusive com **order bumps** (ofertas complementares) se você as configurar.
+
+## Anatomia do fluxo
+
+<Steps>
+  <Step title="Oferta publicada gera um publicCode">
+    Toda oferta publicada tem um `publicCode`. O link é `https://korbit.com.br/o/{publicCode}`.
+  </Step>
+  <Step title="Comprador abre o link">
+    A página cria uma **sessão de checkout** com um token efêmero (TTL de 30 minutos). O token nunca trafega como query param: vai no fragmento da URL e é imediatamente removido do endereço.
+  </Step>
+  <Step title="Compra">
+    PIX ou cartão com 3DS; o valor é o snapshot do preço da oferta no momento da criação da sessão — o comprador não altera valores, e expiração de oferta não afeta uma sessão já aberta dentro do TTL.
+  </Step>
+  <Step title="Confirmação">
+    Ao fechar, o pedido aparece na [lista de pedidos](/catalogo-crm/clientes-e-pedidos) e os eventos `payment.*` chegam ao seu endpoint. Conversões de pixel (Meta/TikTok/Google) são reportadas pelo servidor após a liquidação, se você configurar [tracking](/catalogo-crm/tracking).
+  </Step>
+</Steps>
+
+## Consultar um link pela API
+
+```bash
+curl https://api.korbit.com.br/v1/checkout-links/{publicCode} \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+Retorna a oferta associada, o status da publicação e o destino do link — útil para validar catálogo em integrações e sincronizar sua base.
+
+## Sessão de checkout por API (avançado)
+
+`POST /v1/checkout-sessions` cria uma sessão de checkout **sem** passar pelo link público — com dados do comprador pré-preenchidos e vinculação a um cliente da sua base. Use quando sua aplicação já conhece o comprador e quer pular etapas do formulário. A sessão resultante é do mesmo formato que a criada pelo link.
+
+## Endpoints públicos (comprador)
+
+Os endpoints que o navegador do comprador consome durante o checkout (resolver sessão, status, submit, sugestões de endereço) são **públicos e autenticados por token de sessão** — eles não fazem parte da API de merchant e estão intencionalmente fora da [reference](/api-reference). Sua integração normalmente não precisa chamá-los: a página hospedada cuida de tudo.
+
+<Warning>
+Nunca reutilize ou persista tokens de sessão de checkout no seu backend como se fossem credenciais: são efêmeros, de escopo único e expiram em 30 minutos.
+</Warning>

@@ -1,0 +1,75 @@
+---
+title: "Verificação de assinatura"
+description: "Valide que a entrega veio da Korbit com os cabeçalhos Svix e o segredo do endpoint."
+---
+
+Toda entrega de webhook da Korbit inclui os cabeçalhos de assinatura do padrão **Svix**. Verifique-os com o **segredo de assinatura do endpoint** (formato `whsec_…`), obtido no painel ao criar a assinatura.
+
+| Header | Conteúdo |
+| --- | --- |
+| `svix-id` | Identificador único da mensagem |
+| `svix-timestamp` | Unix timestamp da entrega |
+| `svix-signature` | HMAC-SHA256 (base64) sobre `{id}.{timestamp}.{payload}` |
+
+A assinatura cobre o **corpo exato** recebido: verifique sobre o payload **bruto**, antes de qualquer parse/reeserialização.
+
+## Node.js
+
+```javascript
+import { Webhook } from 'svix'; // npm i svix
+
+const wh = new Webhook(process.env.KORBIT_WEBHOOK_SECRET); // whsec_…
+
+export async function POST(request) {
+  const payload = await request.text(); // corpo bruto!
+  try {
+    const event = wh.verify(payload, {
+      'svix-id': request.headers.get('svix-id'),
+      'svix-timestamp': request.headers.get('svix-timestamp'),
+      'svix-signature': request.headers.get('svix-signature'),
+    });
+    // processar event.type / event.data
+    return new Response(null, { status: 202 });
+  } catch {
+    return new Response('invalid signature', { status: 400 });
+  }
+}
+```
+
+## Python
+
+```python
+from svix.webhooks import Webhook, WebhookVerificationError  # pip install svix
+
+wh = Webhook(os.environ["KORBIT_WEBHOOK_SECRET"])
+
+try:
+    event = wh.verify(raw_body, {
+        "svix-id": headers["svix-id"],
+        "svix-timestamp": headers["svix-timestamp"],
+        "svix-signature": headers["svix-signature"],
+    })
+except WebhookVerificationError:
+    return ("invalid signature", 400)
+```
+
+## Sem SDK
+
+```javascript
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+const secret = Buffer.from(process.env.KORBIT_WEBHOOK_SECRET.split('_')[1], 'base64');
+const signedContent = `${svixId}.${svixTimestamp}.${rawBody}`;
+const expected = createHmac('sha256', secret).update(signedContent).digest('base64');
+const ok = svixSignature
+  .split(' ')
+  .some((sig) => sig.length === expected.length && timingSafeEqual(Buffer.from(sig), Buffer.from(expected)));
+
+// Rejeite também timestamps muito antigos (ex.: tolerância de 5 minutos)
+```
+
+<Warning>
+1. **Sempre compare em tempo constante** e valide a tolerância do timestamp (Svix recomenda 5 minutos) para bloquear replay.
+2. Nunca verifique com o corpo já convertido em objeto — uma re-serialização muda o texto e invalida a assinatura.
+3. Trate múltiplas assinaturas no header (`v1,...`) — verifique alguma válida.
+</Warning>

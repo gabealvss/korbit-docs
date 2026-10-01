@@ -1,0 +1,45 @@
+---
+title: "Retries e entrega"
+description: "Agenda de retentativas, dead-letters e o que fazer quando seu endpoint fica fora do ar."
+---
+
+A entrega de webhooks é **at-least-once**: cada evento é entregue no mínimo uma vez, com retries automáticos quando seu endpoint não responde 2xx.
+
+## Quando há retry
+
+Seu endpoint falhou para a Korbit se:
+
+- responder com status **não-2xx** (incluindo `400` por assinatura inválida);
+- estourar o timeout de resposta;
+- não responder (DNS, TLS, conexão).
+
+Respostas 2xx são sucesso **definitivo** — mesmo que seu processamento interno falhe depois (por isso a recomendação de responder rápido e processar em background).
+
+## Agenda de retries
+
+As tentativas seguem backoff progressivo — imediatamente após a falha e depois em intervalos crescentes, ao longo de aproximadamente 35 horas:
+
+```
+imediato → 5s → 5min → 30min → 2h → 5h → 10h → 10h
+```
+
+## Estados da assinatura
+
+| Estado | Significado |
+| --- | --- |
+| `ACTIVE` | Entregando normalmente |
+| `PENDING` | Criada, aguardando verificação inicial |
+| `ERROR` | Últimas tentativas esgotaram todas as janelas de retry |
+| `DISABLED` | Desabilitada por você |
+
+Quando uma assinatura entra em `ERROR`, a Korbit para de entregar novos eventos para ela até a recuperação — monitore `GET /v1/webhook-subscriptions` e alerte seu time quando o estado mudar.
+
+## Seu endpoint ficou fora do ar
+
+1. Restabeleça o serviço — os retries cobrem o período.
+2. Eventos críticos que expiraram a agenda podem ser reenviados: solicite ao suporte da Korbit o **resend** da mensagem (por `messageId`/evento).
+3. De volta ao ar, faça uma **reconciliação por API** do período (pedidos, payments, payouts) — o webhook acelera, a API confirma.
+
+<Warning>
+Nunca trate a ausência de webhook como ausência de evento: entre o vencimento da agenda e o resend, a única fonte confiável do estado é a API.
+</Warning>

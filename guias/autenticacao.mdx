@@ -1,0 +1,80 @@
+---
+title: "Autenticação"
+description: "Chaves de API da Korbit: formato, escopos, rotação e boas práticas."
+---
+
+Todas as chamadas da API Korbit são autenticadas com uma **chave de API de merchant** enviada no header `Authorization` como bearer token.
+
+## Formato da chave
+
+```
+kbt_{ambiente}_{publicId}_{secret}
+```
+
+| Segmento | Exemplo | Significado |
+| --- | --- | --- |
+| `ambiente` | `live` ou `test` | Define se a chave opera em produção ou sandbox |
+| `publicId` | `a1b2c3d4-…` | Identificador público da chave (visível no painel e nas listagens) |
+| `secret` | parte secreta | Verificado com comparação em tempo constante no servidor |
+
+<Warning>
+O `secret` completo só é exibido **uma única vez**, na criação ou rotação da chave. Guarde-o em um gerenciador de segredos — não é possível recuperá-lo depois.
+</Warning>
+
+## Como enviar
+
+```bash
+curl https://api.korbit.com.br/v1/balance \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+<Note>
+Erros de autenticação retornam `401` com código `INVALID_API_KEY`; chaves válidas sem o escopo necessário retornam `403` com `INSUFFICIENT_SCOPE`. Veja [Erros](/guias/erros).
+</Note>
+
+## Ambientes
+
+O ambiente é **derivado da chave**, não de um parâmetro da requisição:
+
+| Chave | Base URL | Uso |
+| --- | --- | --- |
+| `kbt_test_…` | `https://api-test.korbit.com.br` | Sandbox — providers fake, dados descartáveis |
+| `kbt_live_…` | `https://api.korbit.com.br` | Produção — dinheiro real |
+
+Uma chave `test` nunca funciona em produção e vice-versa: o servidor rejeita a chave se o ambiente dela não corresponde ao ambiente que está atendendo a requisição.
+
+## Escopos
+
+Cada chave possui um conjunto de **escopos** que limita o que ela pode fazer. Aplique o princípio do menor privilégio: uma chave de Integração que só consulta pedidos não precisa de `payouts:write`.
+
+| Escopo | Permite |
+| --- | --- |
+| `payments:read` / `payments:write` | Consultar / criar payment intents |
+| `commerce:read` / `commerce:write` | Catálogo, clientes, pedidos, assinaturas, checkout |
+| `payouts:read` / `payouts:write` | Saldo, liberações, beneficiários, saques |
+| `refunds:read` / `refunds:write` | Refunds e casos de disputa |
+| `webhooks:manage` | Gerenciar assinaturas de webhook |
+| `iam:manage` | Gerenciar chaves de API |
+
+<Warning>
+Escopos de movimentação de dinheiro (`payouts:write`, `refunds:write`, `iam:manage`) são sensíveis: use-os apenas em chaves de serviços confiáveis, preferencialmente com IP allowlist no seu perímetro.
+</Warning>
+
+## Rotação e revogação
+
+- **Rotação** (`POST /v1/iam/api-keys/{id}/rotate`): cria um token substituto com os mesmos escopos e revoga o anterior após um período de carência configurável (`gracePeriodSeconds`). Use em rotação periódica e em suspeita de vazamento.
+- **Revogação** (`DELETE /v1/iam/api-keys/{id}`): a chave morre imediatamente — todas as chamadas seguintes retornam `401`.
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/iam/api-keys/{id}/rotate \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Content-Type: application/json" \
+  -d '{"gracePeriodSeconds": 60}'
+```
+
+## Boas práticas
+
+1. **Nunca exponha a chave no client** — a chave de API é um segredo de servidor. A página de checkout do comprador não precisa dela (ele usa o link público ou tokens de sessão efêmeros).
+2. **Uma chave por integração** — separe chaves por serviço (ERP, e-commerce, job de conciliação) para poder revogar cada uma independentemente e auditar o uso.
+3. **Rote periodicamente** — por exemplo a cada 90 dias.
+4. **Menor privilégio** — combine escopos mínimos com o ambiente correto (`test` enquanto desenvolve).

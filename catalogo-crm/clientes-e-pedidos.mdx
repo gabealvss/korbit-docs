@@ -1,0 +1,52 @@
+---
+title: "Clientes e pedidos"
+description: "Base de clientes, pedidos com paginação e filtros, portal do cliente e atividade."
+---
+
+## Clientes
+
+O cliente agrupa as compras de uma pessoa na sua base Korbit (e-mail como identificador natural):
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/customers \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Maria Souza",
+    "email": "maria@example.com",
+    "taxId": "000.000.000-00"
+  }'
+```
+
+- E-mail duplicado retorna `409 CUSTOMER_EMAIL_TAKEN`.
+- Arquivar (`POST /v1/customers/{id}/archive`) remove o cliente das listagens sem quebrar o histórico de pedidos.
+
+## Pedidos
+
+Cada venda — por [link de pagamento](/pagamentos/checkout-links), sessão de checkout ou assinatura — gera um pedido:
+
+```bash
+# Lista com filtros e paginação
+curl "https://api.korbit.com.br/v1/orders?status=PAID&limit=50" \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Contadores agregados (dashboards)
+curl "https://api.korbit.com.br/v1/orders/counts?groupBy=status" \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Detalhe
+curl https://api.korbit.com.br/v1/orders/{id} \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+- Paginação por **cursor** (`cursor` + `limit`); cursor inválido retorna `400 INVALID_PAYOUT_CURSOR` nas rotas de saque e equivalente nas demais.
+- Para exportação em massa use [export.csv](/guias/exportacoes).
+
+## Atividade
+
+`GET /v1/activity` retorna o feed de atividade da conta (pagamentos, refunds, saques, mudanças de status) — base leve para notificações internas e auditoria de integração.
+
+## Portal do cliente
+
+O portal é a área self-service do comprador (assinar, cancelar, trocar de plano, pedir refund). Você cria sessões de portal por cliente via `POST /v1/customer-portal-sessions` e pode revogá-las — veja o fluxo em [Assinaturas → Portal do cliente](/pagamentos/assinaturas#portal-do-cliente).

@@ -1,0 +1,42 @@
+---
+title: "Produtos, preços e ofertas"
+description: "Modelagem de catálogo: produtos versionados, preços e ofertas publicadas."
+---
+
+O catálogo da Korbit separa **produto** (o que você vende), **preço** (valor versionado) e **oferta** (como o comprador pode pagar). Essa separação permite alterar preços e condições sem recriar registros nem quebrar links existentes.
+
+## Modelo
+
+```mermaid
+flowchart LR
+  P[Produto] --> PR[Preço v1, v2…]
+  P --> O[Oferta]
+  PR --> O
+  O -->|publish| L[Link de pagamento]
+```
+
+- **Produto**: nome, descrição, referência externa, imagens.
+- **Preço**: `amountMinor` em centavos + moeda. Criar um novo preço cria uma **versão**; o histórico permanece.
+- **Oferta**: produto + preço vigente + métodos de pagamento (`PIX`, `CARD`), `maxInstallments` e cadência (avulsa ou recorrente). Publicar a oferta gera o `publicCode` do [link de pagamento](/pagamentos/checkout-links).
+
+## Regras de estado
+
+- Só ofertas **publicadas** geram vendas. Arquivar uma oferta não cancela sessões de checkout já abertas (elas completam dentro do TTL).
+- `POST /v1/offers/{id}/revisions` cria uma revisão da oferta; `publish` troca a versão ativa.
+- Um produto arquivado não aceita novas ofertas.
+
+## Imagens
+
+```bash
+# 1. Solicita um upload (pré-assinado, com checksum)
+curl -X POST https://api.korbit.com.br/v1/products/{id}/image-uploads \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" ...
+
+# 2. Envia o arquivo direto ao storage com o body exato do presigned PUT
+
+# 3. Confirma: a Korbit valida o objeto armazenado (tipo, tamanho, checksum)
+curl -X POST https://api.korbit.com.br/v1/products/{id}/image-uploads/{uploadId}/complete \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+Formatos aceitos: JPEG, PNG e WebP (2 MiB). A validação acontece sobre o objeto **armazenado** — divergências entre o declarado e o enviado rejeitam o upload.

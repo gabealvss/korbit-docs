@@ -1,0 +1,30 @@
+---
+title: "Glossário"
+description: "Termos de pagamentos brasileiros e do universo Korbit."
+---
+
+| Termo | Definição |
+| --- | --- |
+| **PIX** | Sistema de pagamentos instantâneos do Banco Central. Na Korbit, usado para cobranças únicas e recorrentes (PIX Automático). |
+| **PIX Automático** | Modalidade de cobrança PIX recorrente com débito agendado na conta do pagador. |
+| **3DS (3D Secure)** | Autenticação do comprador junto ao emissor do cartão. Quando exigida, o checkout exibe o desafio do banco. |
+| **3DS Challenge (cardAction)** | Ação pendente no payment intent enquanto o desafio 3DS não é concluído. |
+| **Payment intent** | A intenção de cobrança na API Korbit — a entidade que carrega valor, método e estado. |
+| **Order bump** | Oferta complementar apresentada no checkout; soma ao total da compra. |
+| **Checkout session** | Sessão efêmera (30 min) que conduz a compra do comprador; criada por link público ou via API. |
+| **Public code** | Identificador público de uma oferta publicada; base do link de pagamento. |
+| **KYC / KYB** | Verificação de identidade (pessoa física) / de empresa (pessoa jurídica) exigida antes de operar. |
+| **Chargeback** | Contestação do pagamento aberta pelo comprador no banco emissor. |
+| **MED (Money Exchange Dispute)** | Disputa de transação PIX aberta pelo pagador. |
+| **Refund case** | Caso de revisão de refund com prazo de resposta do merchant. |
+| **Funds release (liberação de recursos)** | Momento em que o valor de uma transação confirmada fica disponível para saque. |
+| **Payout** | Saque: transferência do saldo disponível para a chave PIX de um beneficiário. |
+| **Beneficiário** | Chave PIX cadastrada como destino de saques. |
+| **Antecipação** | Crédito sobre recebíveis futuros, com taxa de desconto. |
+| **Idempotency-Key** | Header que torna mutações seguras para retry — mesma chave + mesmo payload = mesma resposta. |
+| **RFC 7807** | Formato padrão de erros da API (`application/problem+json`) com campo `code` estável. |
+| **Svix** | Provedor de entrega de webhooks; define os cabeçalhos `svix-*` usados na [assinatura](/webhooks/assinatura). |
+| **Rate limit** | Limite de requisições por rota (ex.: 60/min para criar payment intent). |
+| **Sandbox** | Ambiente de teste com providers fake (`kbt_test_`). |
+| **Token de cartão (tokenização)** | Substituto de uso único gerado pelo provedor; o número do cartão nunca trafega pela Korbit. |
+| **LGPD** | Lei Geral de Proteção de Dados — os dados de compradores coletados no checkout são tratados sob esta lei. |

@@ -1,0 +1,44 @@
+---
+title: "Ambientes e sandbox"
+description: "Como funcionam o sandbox e a produção da Korbit, e o que muda entre eles."
+---
+
+A Korbit opera dois ambientes isolados. Você escolhe qual usar **pela chave** — não há parâmetro de ambiente nas requisições.
+
+| | Sandbox | Produção |
+| --- | --- | --- |
+| Prefixo da chave | `kbt_test_` | `kbt_live_` |
+| Base URL | `https://api-test.korbit.com.br` | `https://api.korbit.com.br` |
+| Provedores de pagamento | Fake (sem contato com PSPs) | Woovi (PIX) e Mercado Pago (cartão) |
+| Dinheiro | Nenhum — dados descartáveis | Real |
+
+<Note>
+A resposta de um payment intent no sandbox inclui um código PIX fake (prefixo `KORBIT_FAKE_PIX_`) — suficiente para desenvolver o fluxo completo sem registrar chaves em nenhum provedor.
+</Note>
+
+## O que é idêntico nos dois ambientes
+
+- Contratos de request/response (a [spec OpenAPI](/api-reference) é a mesma).
+- Semântica de [idempotência](/guias/idempotencia), [erros](/guias/erros) e [rate limits](/guias/rate-limits).
+- Estados das entidades (payment intents, assinaturas, payouts).
+
+## Sandbox: simulação
+
+No sandbox você controla o desfecho dos pagamentos com os endpoints de simulação — não existe "pagar de verdade":
+
+<CardGroup cols={2}>
+  <Card title="Simular resultado de pagamento" icon="flask" href="/sandbox/simulate">
+    Aprova, recusa ou expira um payment intent criado com chave de teste.
+  </Card>
+  <Card title="Simular webhooks" icon="satellite-dish" href="/sandbox/simulate">
+    Dispara a entrega dos mesmos eventos que a produção enviaria ao seu endpoint.
+  </Card>
+</CardGroup>
+
+## Retenção de dados
+
+O sandbox é um ambiente de teste: dados antigos podem ser removidos por rotinas de retenção. Não armazene nele nada que você não tenha em outro lugar.
+
+## Indo para produção
+
+Produção exige aprovação de verificação (KYC/KYB) e liberação das capacidades de pagamento. O passo a passo completo está em [Go-live](/guias/go-live).

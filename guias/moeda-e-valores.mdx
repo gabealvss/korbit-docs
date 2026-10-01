@@ -1,0 +1,32 @@
+---
+title: "Moeda e valores"
+description: "BRL, inteiros em centavos (amountMinor) e regras de arredondamento."
+---
+
+A API Korbit trabalha exclusivamente com **Real (BRL)** e representa valores como **inteiros em centavos** (`amountMinor` ou `amount`, conforme o campo). Isso elimina erros de ponto flutuante na sua contabilidade e na nossa.
+
+| `amount` / `amountMinor` | Valor monetário |
+| ---: | --- |
+| `1490` | R$ 14,90 |
+| `14990` | R$ 149,90 |
+| `1000000` | R$ 10.000,00 |
+
+## Regras
+
+1. **Sem decimais** — o campo é sempre inteiro. `14.99` é inválido; `1499` é o correto.
+2. **Mínimos por operação** — pagamentos e saques possuem valores mínimos (ex.: payout mínimo de R$ 10,00 = `1000` centavos). Os schemas da [API Reference](/api-reference) indicam o mínimo de cada campo.
+3. **Não faça conversão no client do comprador** — a exibição pode formatar, mas o valor enviado à API já deve estar em centavos.
+4. **Parcelamento não altera o total** — o `amount` é o valor total da compra; o parcelamento é uma opção de pagamento do comprador na página de checkout.
+
+## Formatação para exibição
+
+```javascript
+const formatBRL = (amountMinor) =>
+  (amountMinor / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+formatBRL(14990); // "R$ 149,90"
+```
+
+<Note>
+Campos que representam **datas de referência financeira** (liberações de saldo, prazos de refund) vêm em ISO 8601 UTC. Converta para o fuso do seu painel na exibição.
+</Note>

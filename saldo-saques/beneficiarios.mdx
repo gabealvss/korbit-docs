@@ -1,0 +1,46 @@
+---
+title: "Beneficiários (chaves PIX)"
+description: "Cadastro e gestão das chaves PIX de destino dos seus saques."
+---
+
+Um **beneficiário** é uma chave PIX de destino para seus saques. As chaves são armazenadas **criptografadas** pela Korbit (AES-256-GCM) e nunca são exibidas por inteiro após o cadastro — a API retorna apenas a chave mascarada.
+
+## Cadastrar
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/payout-beneficiaries \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pixKey": "seu-cpf-ou-cnpj-ou-email-ou-aleatoria",
+    "holderName": "Nome do titular",
+    "holderTaxId": "000.000.000-00"
+  }'
+```
+
+Tipos de chave aceitos: CPF, CNPJ, e-mail, telefone e chave aleatória (EVP) — validados no cadastro (`403`/`422 INVALID_PIX_KEY` quando inválida).
+
+## Gerenciar
+
+```bash
+# Listar (chaves mascaradas)
+curl https://api.korbit.com.br/v1/payout-beneficiaries \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Definir como principal
+curl -X PATCH https://api.korbit.com.br/v1/payout-beneficiaries/{id}/primary \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Desabilitar/remover
+curl -X DELETE https://api.korbit.com.br/v1/payout-beneficiaries/{id} \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+<Warning>
+Beneficiário é destino de dinheiro: valide o titular no primeiro cadastro e trate a rotação como operação sensível. Mudanças de beneficiário aparecem no painel e passam pelo fluxo de verificação da Korbit.
+</Warning>
+
+## Uso nos saques
+
+Ao [solicitar um payout](/saldo-saques/payout-requests) você referencia o `id` do beneficiário. A Korbit revalida a elegibilidade do beneficiário na aprovação e novamente na execução — um beneficiário desabilitado bloqueia o saque, não o saldo.

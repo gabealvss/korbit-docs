@@ -1,0 +1,65 @@
+---
+title: "Go-live"
+description: "Checklist completo para sair do sandbox e operar em produção com a Korbit."
+---
+
+Transitar do sandbox para produção envolve verificação da conta, liberação de capacidades e uma revisão da integração. Siga este checklist na ordem.
+
+## 1. Verificação da conta (KYC/KYB)
+
+<Steps>
+  <Step title="Complete o cadastro legal">
+    Dados do titular/empresa (PF ou PJ), endereço e documentos no painel. A verificação é feita por nosso parceiro de identidade.
+  </Step>
+  <Step title="Aguarde a aprovação">
+    Você recebe um evento `merchant.status.updated.v1` (se tiver [webhooks](/webhooks/visao-geral) configurados) e a confirmação no painel.
+  </Step>
+  <Step title="Liberação de capacidades">
+    Com a conta aprovada, as capacidades de pagamento (PIX, cartão) são habilitadas. Capacidade desabilitada retorna `403 MERCHANT_CAPABILITY_DISABLED`.
+  </Step>
+</Steps>
+
+## 2. Preparar a integração
+
+<Checklist>
+  <ChecklistItem title="Testar o fluxo completo no sandbox">
+    Venda aprovada, recusada e expirada; refund; webhook recebido e verificado. Use [simulações](/sandbox/simulate) para cenários de erro.
+  </ChecklistItem>
+  <ChecklistItem title="Idempotency-Key em todas as mutações">
+    Retries seguros em todo o caminho crítico. Veja [Idempotência](/guias/idempotencia).
+  </ChecklistItem>
+  <ChecklistItem title="Tratamento de erros e rate limits">
+    Backoff em `429`/`503` e decisão por `code`. Veja [Erros](/guias/erros) e [Rate limits](/guias/rate-limits).
+  </ChecklistItem>
+  <ChecklistItem title="Webhook endpoint em HTTPS público">
+    Verificação de assinatura implementada e resposta 2xx rápida. Veja [Assinatura de webhooks](/webhooks/assinatura).
+  </ChecklistItem>
+  <ChecklistItem title="Chaves com menor privilégio">
+    Nenhuma chave de produção com escopo além do necessário; segredos em gerenciador seguro, nunca em código.
+  </ChecklistItem>
+</Checklist>
+
+## 3. Ativar produção
+
+<Steps>
+  <Step title="Criar chaves live">
+    No painel, crie chaves `kbt_live_` com os escopos mínimos por integração. Configure a base URL `https://api.korbit.com.br`.
+  </Step>
+  <Step title="Registrar webhooks de produção">
+    Crie assinaturas de webhook no ambiente live apontando para seu endpoint de produção.
+  </Step>
+  <Step title="Validar primeira venda real">
+    Faça uma venda de valor baixo, confirme o webhook `payment.succeeded.v1`, o saldo e a liberação dos recursos.
+  </Step>
+  <Step title="Acompanhar o primeiros ciclos">
+    Monitore [pedidos](/catalogo-crm/clientes-e-pedidos), [saldo](/saldo-saques/balance) e dead-letters de webhook nos primeiros dias.
+  </Step>
+</Steps>
+
+<Warning>
+Não mova produção para cima de chaves de teste "por praticidade": chaves `kbt_test_` são recusadas no ambiente live e dados de sandbox não migram para produção.
+</Warning>
+
+## Suporte
+
+Durante o go-live, o time da Korbit acompanha a operação. Ao abrir um chamado, inclua sempre o `requestId` das requisições com problema. Veja [Suporte](/recursos/suporte).

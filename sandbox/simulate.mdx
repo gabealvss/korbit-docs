@@ -1,0 +1,36 @@
+---
+title: "Simulação"
+description: "Controle o desfecho de pagamentos e dispare webhooks no sandbox."
+---
+
+No sandbox, o desfecho dos pagamentos é controlado por você com endpoints de simulação — disponíveis apenas para chaves `kbt_test_`.
+
+## Simular o resultado de um payment intent
+
+`POST /v1/sandbox/payment-intents/{id}/simulate` força o payment intent para um estado final:
+
+```bash
+curl -X POST https://api-test.korbit.com.br/v1/sandbox/payment-intents/{id}/simulate \
+  -H "Authorization: Bearer kbt_test_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{ "outcome": "SUCCEEDED" }'
+```
+
+| `outcome` | Efeito |
+| --- | --- |
+| `SUCCEEDED` | Confirma o pagamento como se o comprador tivesse pago |
+| `FAILED` | Recusa (caminho de recusa do seu fluxo) |
+| `EXPIRED` | Expira (caminho de re-tentativa) |
+
+## Simular caso de refund
+
+`POST /v1/sandbox/payment-intents/{id}/cases/simulate` cria um caso de refund/disputa para exercitar [aprovação, contestação e prazos](/refunds-disputas/refunds).
+
+## Simular entrega de webhook
+
+`POST /v1/sandbox/payment-intents/{id}/webhooks/simulate` envia ao seu endpoint a mesma mensagem assinada (Svix) que a produção enviaria para o evento correspondente — use para validar a [verificação de assinatura](/webhooks/assinatura) com dados de verdade, sem tocar no provedor.
+
+<Note>
+Simulações respeitam estados: um payment intent já `SUCCEEDED` não pode ser "recusado". Estados inválidos retornam o mesmo problema+code da produção.
+</Note>

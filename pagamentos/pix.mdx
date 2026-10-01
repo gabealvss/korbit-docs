@@ -1,0 +1,35 @@
+---
+title: "PIX"
+description: "Recebimento por PIX com QR Code, copia-e-cola e expiração controlada."
+---
+
+O PIX é gerado no momento da criação do payment intent (ou da sessão de checkout) e fica disponível para o comprador até a expiração.
+
+## Como funciona
+
+<Steps>
+  <Step title="Criação">
+    A Korbit solicita a cobrança ao provedor PIX (Woovi) e recebe o código EMV.
+  </Step>
+  <Step title="Exibição">
+    Você (ou a página de checkout hospedada) exibe o QR Code e o copia-e-cola. O comprador paga pelo app do banco dele.
+  </Step>
+  <Step title="Confirmação">
+    O provedor notifica a Korbit, que valida a confirmação (inclusive valor exato) e move o estado para `SUCCEEDED` — e dispara `payment.succeeded.v1`.
+  </Step>
+</Steps>
+
+## Expiração
+
+O PIX tem TTL próprio (padrão de 900 segundos). Um código expirado **não pode ser confirmado** pelo provedor mesmo que pago fora do prazo — nesse caso crie um novo payment intent. Configure `expiresInSeconds` conforme a experiência do seu checkout.
+
+## Boas práticas
+
+1. **Exiba copia-e-cola e QR** — nem todos os apps de banco leem QR da tela.
+2. **Confirme por webhook**, não por tela — a tela pode ser fechada antes do webhook chegar; sua conciliação depende do evento.
+3. **Valor exato** — transferências com valor divergente não são confirmadas; não tente "arredondar" o valor do QR.
+4. **Timeout com retry idempotente** — se o comprador não pagou antes da expiração, gere um novo intent com um novo `Idempotency-Key`.
+
+## PIX Automático (recorrência)
+
+Assinaturas com cobrança PIX recorrente usam PIX Automático — você cria a assinatura via [checkout](/pagamentos/checkout-links) com oferta recorrente e a Korbit agenda as cobranças por ciclo. Consulte [Assinaturas](/pagamentos/assinaturas).

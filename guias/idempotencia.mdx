@@ -1,0 +1,39 @@
+---
+title: "Idempotência"
+description: "Como usar Idempotency-Key para tornar retries e reprocessamentos seguros."
+---
+
+Toda mutação na API Korbit aceita o header `Idempotency-Key`. Com ele, um retry — timeout, queda de rede, duplo clique — **nunca cria o recurso duas vezes nem move dinheiro duas vezes**.
+
+## Como funciona
+
+1. Envie a mutação com um `Idempotency-Key` único por operação de negócio (recomendamos um UUID v4 gerado por você).
+2. A API grava a chave com o **hash do payload** antes de executar o comando.
+3. Resultados possíveis:
+
+| Situação | Resposta |
+| --- | --- |
+| Primeira chamada | Executa normalmente (`201`/`200`) |
+| Retry com **mesma** chave e **mesmo** payload | Retorna a **resposta armazenada** da primeira execução — nada é re-executado |
+| Mesma chave com **payload diferente** | `409 IDEMPOTENCY_KEY_REUSED` |
+| Original ainda em processamento | `409 IDEMPOTENCY_IN_PROGRESS` com `Retry-After` |
+| Chave ausente em mutação que exige | `400 IDEMPOTENCY_KEY_REQUIRED` |
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/payment-intents \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: 7f3b9c1e-2a4d-4e8f-9b0a-1c2d3e4f5a6b" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 14990, "currency": "BRL", "paymentMethod": "PIX", ... }'
+```
+
+## Regras de ouro
+
+1. **Gere a chave antes de enviar** e guarde-a até obter resposta definitiva. Se o seu processador crashar no meio de um request, o retry com a mesma chave conclui com segurança.
+2. **Nova intenção de negócio = nova chave.** Cobrar o cliente de novo é uma nova operação, com nova chave.
+3. **Não altere o payload em retries.** Precisa corrigir o valor? Use uma nova chave (é uma nova intenção).
+4. **Trate `IDEMPOTENCY_IN_PROGRESS`** com espera curta + retry — significa que a primeira chamada está viva, não morta.
+
+## Onde a chave é obrigatória
+
+Todas as mutações financeiras e de catálogo aceitam `Idempotency-Key`; nos comandos de movimentação de dinheiro (payment intents, payouts, refunds) ela é **exigida**. O `Idempotency-Key` é escopado à sua conta (tenant): chaves de merchants diferentes nunca colidem.

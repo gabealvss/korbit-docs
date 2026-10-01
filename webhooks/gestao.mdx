@@ -1,0 +1,47 @@
+---
+title: "Gestão de assinaturas"
+description: "Criar, listar e desabilitar assinaturas de webhook via API."
+---
+
+As assinaturas de webhook são gerenciadas por API com o escopo `webhooks:manage`.
+
+## Criar
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/webhook-subscriptions \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://api.suaempresa.com.br/korbit/webhooks",
+    "eventTypes": ["payment.succeeded.v1", "payment.failed.v1", "refund.requested.v1"]
+  }'
+```
+
+Regras:
+
+- `url` deve ser **HTTPS público** — endereços privados (localhost, redes internas) são recusados (`INVALID_WEBHOOK_URL`).
+- Uma assinatura por URL (`WEBHOOK_SUBSCRIPTION_ALREADY_EXISTS` em duplicidade).
+- **O segredo de assinatura (`whsec_…`) é exibido uma única vez** no painel ao criar o endpoint — é com ele que você [verifica cada entrega](/webhooks/assinatura).
+
+## Listar e monitorar
+
+```bash
+curl https://api.korbit.com.br/v1/webhook-subscriptions \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+Retorna id, URL, tipos de evento, ambiente e estado (`ACTIVE`/`PENDING`/`ERROR`/`DISABLED`). Configure um alerta no seu time para o estado `ERROR`.
+
+## Desabilitar
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/webhook-subscriptions/{id}/disable \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+Desabilitar para a entrega imediatamente e preserva a assinatura para reativação no painel.
+
+## Reenvio manual
+
+Eventos cuja agenda de [retries](/webhooks/retries) esgotou podem ser reenviados pelo time da Korbit (por mensagem). Abra um chamado com o `requestId`/período afetado — veja [Suporte](/recursos/suporte).

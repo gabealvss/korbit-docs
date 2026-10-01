@@ -1,0 +1,64 @@
+---
+title: "Payment intents"
+description: "Crie e acompanhe cobranças diretas por PIX ou cartão com payment intents."
+---
+
+O **payment intent** é a intenção de cobrança na API Korbit. Você cria com o valor e o método de pagamento, e a Korbit orquestra o provedor (Woovi para PIX, Mercado Pago para cartão), os estados e a conciliação.
+
+## Estados
+
+| Estado | Significado |
+| --- | --- |
+| `REQUIRES_ACTION` | Aguardando o comprador: PIX gerado (QR/copia-e-cola) ou desafio 3DS pendente |
+| `SUCCEEDED` | Pago e confirmado pelo provedor |
+| `FAILED` | Recusado ou expirado |
+| `CANCELED` | Cancelado |
+
+Transições de estado chegam via [webhooks](/webhooks/visao-geral) (`payment.created.v1`, `payment.requires_action.v1`, `payment.succeeded.v1`, `payment.failed.v1`) — **nunca confie apenas em polling**.
+
+## Criar um payment intent PIX
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/payment-intents \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 14990,
+    "currency": "BRL",
+    "paymentMethod": "PIX",
+    "description": "Pedido #1042",
+    "externalReference": "pedido-1042",
+    "expiresInSeconds": 900
+  }'
+```
+
+A resposta em `REQUIRES_ACTION` traz o código PIX **copia-e-cola** (e QR Code) para exibir ao comprador:
+
+```json
+{
+  "id": "pi_…",
+  "status": "REQUIRES_ACTION",
+  "amount": 14990,
+  "currency": "BRL",
+  "paymentMethod": "PIX",
+  "pix": { "copyAndPaste": "00020126…6304ABCD" }
+}
+```
+
+<Note>
+No sandbox o código PIX vem com prefixo `KORBIT_FAKE_PIX_` e você controla o desfecho com [simulação](/sandbox/simulate).
+</Note>
+
+## Cartão de crédito
+
+O fluxo recomendado para cartão é via **checkout hospedado** (link de pagamento ou sessão de checkout), onde os dados sensíveis do cartão são capturados diretamente pelo provedor em iframes seguros — sua aplicação nunca toca no número do cartão. Quando a operação exige autenticação 3D Secure, a sessão conduz o desafio automaticamente; o desfecho chega no payment intent (veja [Cartão e 3DS](/pagamentos/cartao-3ds)).
+
+## Consultar e conciliar
+
+```bash
+curl https://api.korbit.com.br/v1/payment-intents/{id} \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+Use `externalReference` para amarrar o payment intent ao seu pedido interno e fazer a conciliação do seu lado. O `status` retornado pela API é sempre a fonte autoritativa — replays de webhook não devem mudar o estado do seu sistema (veja [Idempotência](/guias/idempotencia)).

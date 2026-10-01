@@ -1,0 +1,31 @@
+---
+title: "Visão geral do sandbox"
+description: "Desenvolva a integração completa com providers fake e dados descartáveis."
+---
+
+O sandbox (`kbt_test_` → `https://api-test.korbit.com.br`) replica a API de produção com **providers de pagamento fake**: nenhum PSP real é acionado, nenhum dinheiro existe, e os dados são descartáveis por política de retenção.
+
+## O que você constrói igual
+
+- Todo o fluxo de [checkout por link](/pagamentos/checkout-links) e de [payment intents](/pagamentos/payment-intents).
+- Assinaturas, [clientes e pedidos](/catalogo-crm/clientes-e-pedidos).
+- [Webhooks](/webhooks/visao-geral) reais (entrega e assinatura de verdade — só o provedor de pagamento é fake).
+- Tratamento de [erros](/guias/erros), [idempotência](/guias/idempotencia) e [rate limits](/guias/rate-limits).
+
+## O que muda
+
+| | Sandbox | Produção |
+| --- | --- | --- |
+| PIX | Código fake `KORBIT_FAKE_PIX_…` | PIX real (Woovi) |
+| Cartão/3DS | Simulado por API | Fluxo real (Mercado Pago) |
+| Payout | Solicitação sem execução bancária | Execução PIX real |
+| Confirmação | Por [simulação](/sandbox/simulate) | Pelo provedor |
+
+## Fluxo típico de desenvolvimento
+
+<Steps>
+  <Step title="Crie a chave de teste no painel">Integrações → Chaves de API → chave `kbt_test_`.</Step>
+  <Step title="Construa o fluxo completo">Catálogo → link de pagamento → pedido. A validação real de webhooks acontece aqui.</Step>
+  <Step title="Exercite os caminhos de erro">Simule recusa, expiração e refund — não só o caminho feliz.</Step>
+  <Step title="Siga o [checklist de go-live](/guias/go-live)">Troque as chaves, as URLs de webhook e a base URL.</Step>
+</Steps>

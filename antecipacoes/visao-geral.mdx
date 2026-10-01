@@ -1,0 +1,42 @@
+---
+title: "Antecipações"
+description: "Receba hoje recebíveis futuros: elegibilidade, cotação e solicitação."
+---
+
+Uma **antecipação** (advance) permite receber imediatamente o valor de recebíveis que só seriam liberados em datas futuras, mediante taxa de desconto calculada pela Korbit.
+
+## Fluxo
+
+<Steps>
+  <Step title="Consultar recebíveis">
+    `GET /v1/advance/receivables` lista os recebíveis elegíveis e seus valores.
+  </Step>
+  <Step title="Verificar elegibilidade">
+    `GET /v1/advance/eligibility` informa se sua conta e os recebíveis atendem aos critérios de risco (recebíveis já usados como garantia, disputas abertas e histórico afetam a análise).
+  </Step>
+  <Step title="Cotar">
+    `POST /v1/advance/quotes` devolve a cotação: valor bruto, taxa de desconto e valor líquido a receber. A cotação tem validade própria (`409 ADVANCE_QUOTE_EXPIRED` se usada depois).
+  </Step>
+  <Step title="Solicitar">
+    `POST /v1/advance/requests` vincula a cotação e cria a solicitação, que passa por revisão da Korbit antes da liberação.
+  </Step>
+</Steps>
+
+## Garantias
+
+- **Dupla alegação impossível**: o mesmo recebível não pode sustentar duas antecipações — a reserva é transacional e verificada na liberação.
+- **Segregação de papéis**: a revisão e a liberação são feitas por operadores distintos na Korbit; a decisão chega a você pelo estado da solicitação.
+
+## Estados
+
+| Estado | Significado |
+| --- | --- |
+| `PENDING_REVIEW` | Solicitação em análise |
+| `APPROVED` | Aprovada, aguardando liberação |
+| `RELEASED` | Valor líquido creditado no saldo |
+| `REJECTED` | Recusada (motivo no detalhe) |
+| `SETTLED` | Recebível original liquidou e a antecipação foi quitada |
+
+<Warning>
+A antecipação é uma operação de crédito: o recebível antecipado passa a pertencer à Korbit até a quitação. Divergências do provedor (refund/chargeback sobre um recebível antecipado) impactam os próximos recebíveis — leia os termos comerciais da sua conta.
+</Warning>

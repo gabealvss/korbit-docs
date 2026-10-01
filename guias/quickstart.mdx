@@ -1,0 +1,140 @@
+---
+title: "Quickstart"
+description: "Faça sua primeira chamada na API Korbit em menos de 10 minutos."
+---
+
+Neste guia você vai criar um produto, uma oferta com preço e um **link de pagamento** — o caminho mais rápido para receber sua primeira venda. Ao final, apontamos os próximos passos para pagamentos diretos e webhooks.
+
+<Note>
+Este guia usa o **sandbox** (chave `kbt_test_`). Nada do que você fizer aqui movimenta dinheiro real. Consulte [Ambientes e sandbox](/guias/ambientes-e-sandbox) para os detalhes.
+</Note>
+
+## Antes de começar
+
+<Steps>
+  <Step title="Crie sua conta Korbit">
+    Cadastre-se no painel da Korbit e complete o onboarding. Em ambiente de teste, o cadastro é imediato.
+  </Step>
+  <Step title="Gere uma chave de API">
+    No painel, acesse **Integrações → Chaves de API** e crie uma chave de teste. O token é exibido **uma única vez** — guarde-o em um gerenciador de segredos. Ele tem o formato:
+
+    ```
+    kbt_test_<publicId>_<secret>
+    ```
+  </Step>
+  <Step title="Escolha o base URL do sandbox">
+    Todas as chamadas do quickstart vão para `https://api-test.korbit.com.br`.
+  </Step>
+</Steps>
+
+## 1. Crie um produto
+
+O produto é a "ficha" do que você vende. Preço e oferta são entidades separadas (versionadas), para você poder alterar preços sem recriar o produto.
+
+<CodeGroup>
+```bash curl
+curl -X POST https://api-test.korbit.com.br/v1/products \
+  -H "Authorization: Bearer kbt_test_EXEMPLO_NAO_USAR" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Curso de Marketing Digital",
+    "description": "Curso completo em 12 módulos",
+    "externalReference": "curso-md-001"
+  }'
+```
+```javascript Node.js
+const response = await fetch('https://api-test.korbit.com.br/v1/products', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.KORBIT_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Curso de Marketing Digital',
+    description: 'Curso completo em 12 módulos',
+    externalReference: 'curso-md-001',
+  }),
+});
+const product = await response.json();
+```
+</CodeGroup>
+
+A resposta inclui o `id` do produto — você vai usá-lo nos próximos passos.
+
+## 2. Defina um preço
+
+Preços são sempre em **centavos** (BRL): `14990` = R$ 149,90.
+
+<CodeGroup>
+```bash curl
+curl -X POST https://api-test.korbit.com.br/v1/products/{productId}/prices \
+  -H "Authorization: Bearer kbt_test_EXEMPLO_NAO_USAR" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amountMinor": 14990,
+    "currency": "BRL"
+  }'
+```
+```javascript Node.js
+const price = await fetch(
+  `https://api-test.korbit.com.br/v1/products/${productId}/prices`,
+  {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.KORBIT_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ amountMinor: 14990, currency: 'BRL' }),
+  },
+).then((r) => r.json());
+```
+</CodeGroup>
+
+## 3. Crie uma oferta e publique
+
+A oferta une produto + preço e define como o comprador paga (PIX, cartão, parcelamento). Só ofertas **publicadas** podem ser vendidas.
+
+<CodeGroup>
+```bash curl
+# 1. Cria a oferta a partir do produto e preço
+curl -X POST https://api-test.korbit.com.br/v1/products/{productId}/offers \
+  -H "Authorization: Bearer kbt_test_EXEMPLO_NAO_USAR" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "priceId": "{priceId}",
+    "paymentMethods": ["PIX", "CARD"],
+    "maxInstallments": 12
+  }'
+
+# 2. Publica
+curl -X POST https://api-test.korbit.com.br/v1/offers/{offerId}/publish \
+  -H "Authorization: Bearer kbt_test_EXEMPLO_NAO_USAR"
+```
+</CodeGroup>
+
+## 4. Gere um link de pagamento
+
+Cada oferta publicada recebe um `publicCode`. O link de pagamento é a página hospedada da Korbit onde o comprador conclui a compra:
+
+```
+https://korbit.com.br/o/{publicCode}
+```
+
+Compartilhe esse link em qualquer canal. Quando o comprador pagar, o pedido aparece na sua conta via [webhooks](/webhooks/visao-geral) e na API de [pedidos](/catalogo-crm/clientes-e-pedidos).
+
+## Próximos passos
+
+<CardGroup cols={2}>
+  <Card title="Pagamentos diretos" icon="credit-card" href="/pagamentos/payment-intents">
+    Sem página hospedada: crie payment intents PIX ou cartão direto pela API.
+  </Card>
+  <Card title="Assinaturas" icon="repeat" href="/pagamentos/assinaturas">
+    Vendas recorrentes com troca de plano e cancelamento.
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/webhooks/visao-geral">
+    Receba eventos assinados de cada mudança de estado.
+  </Card>
+  <Card title="Simular no sandbox" icon="flask" href="/sandbox/visao-geral">
+    Simule aprovações, falhas e webhooks sem tocar em provedores reais.
+  </Card>
+</CardGroup>

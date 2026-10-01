@@ -1,0 +1,16 @@
+---
+title: "Changelog"
+description: "Histórico de mudanças na API e na documentação."
+---
+
+<Update label="2026-10-01" description="Lançamento inicial da documentação pública">
+  - Documentação pública da API v1: guias, API Reference gerada do OpenAPI, webhooks e sandbox.
+  - API Reference cobre os 77 endpoints acessíveis por chave de API de merchant.
+  - Playground interativo com suporte a chaves de sandbox e produção.
+</Update>
+
+## Como acompanhamos mudanças
+
+- A [API Reference](/api-reference) é gerada automaticamente da nossa especificação OpenAPI — o que está lá é o que a API faz.
+- Tipos de [webhook](/webhooks/catalogo-de-eventos) são versionados: eventos novos mantêm compatibilidade; mudanças incompatíveis geram uma nova versão `.*.vN` e são anunciadas aqui com período de transição.
+- Mudanças de contratos (campos novos opcionais, novos códigos de erro) não são breaking changes e aparecem aqui por release.

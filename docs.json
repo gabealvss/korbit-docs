@@ -1,0 +1,253 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Korbit Docs",
+  "description": "Documentação da API Korbit: pagamentos por PIX e cartão, assinaturas, checkout por link, payouts, antecipações e webhooks.",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#0D9373",
+    "dark": "#0A6B55"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Início",
+        "pages": ["introduction"]
+      },
+      {
+        "tab": "Guias",
+        "groups": [
+          {
+            "group": "Primeiros passos",
+            "pages": [
+              "guias/quickstart",
+              "guias/autenticacao",
+              "guias/ambientes-e-sandbox"
+            ]
+          },
+          {
+            "group": "Referência essencial",
+            "pages": [
+              "guias/erros",
+              "guias/idempotencia",
+              "guias/rate-limits",
+              "guias/moeda-e-valores",
+              "guias/exportacoes"
+            ]
+          },
+          {
+            "group": "Indo para produção",
+            "pages": ["guias/go-live"]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "openapi": "openapi/korbit-public-v1.json",
+        "groups": [
+          {
+            "group": "Pagamentos",
+            "pages": [
+              "POST /v1/payment-intents",
+              "GET /v1/payment-intents/{id}"
+            ]
+          },
+          {
+            "group": "Checkout",
+            "pages": [
+              "POST /v1/checkout-sessions",
+              "GET /v1/checkout-links/{publicCode}"
+            ]
+          },
+          {
+            "group": "Assinaturas",
+            "pages": [
+              "GET /v1/subscriptions",
+              "GET /v1/subscriptions/{id}",
+              "GET /v1/subscriptions/{id}/invoices",
+              "POST /v1/subscriptions/{id}/cancel",
+              "GET /v1/subscriptions/export.csv"
+            ]
+          },
+          {
+            "group": "Clientes & Pedidos",
+            "pages": [
+              "POST /v1/customers",
+              "GET /v1/customers",
+              "GET /v1/customers/{id}",
+              "PATCH /v1/customers/{id}",
+              "POST /v1/customers/{id}/archive",
+              "POST /v1/customer-portal-sessions",
+              "POST /v1/customers/{id}/portal-sessions/revoke",
+              "GET /v1/orders",
+              "GET /v1/orders/{id}",
+              "GET /v1/orders/counts",
+              "GET /v1/orders/export.csv",
+              "GET /v1/customers/export.csv"
+            ]
+          },
+          {
+            "group": "Catálogo",
+            "pages": [
+              "POST /v1/products",
+              "GET /v1/products",
+              "GET /v1/products/{id}",
+              "PATCH /v1/products/{id}",
+              "POST /v1/products/{id}/archive",
+              "POST /v1/products/{id}/prices",
+              "GET /v1/products/{id}/prices",
+              "POST /v1/products/{id}/offers",
+              "GET /v1/products/{id}/offers",
+              "GET /v1/offers/{id}",
+              "PATCH /v1/offers/{id}",
+              "POST /v1/offers/{id}/revisions",
+              "POST /v1/offers/{id}/publish",
+              "POST /v1/offers/{id}/archive",
+              "POST /v1/products/{id}/image-uploads",
+              "GET /v1/products/{id}/image-uploads/{uploadId}",
+              "POST /v1/products/{id}/image-uploads/{uploadId}/complete",
+              "PUT /v1/products/{id}/tracking-integrations",
+              "GET /v1/products/{id}/tracking-integrations",
+              "GET /v1/products/{id}/tracking-events"
+            ]
+          },
+          {
+            "group": "Saldo & Saques",
+            "pages": [
+              "GET /v1/balance",
+              "GET /v1/balance/breakdown",
+              "GET /v1/funds/releases",
+              "GET /v1/funds/releases/calendar",
+              "GET /v1/funds/releases/summary",
+              "POST /v1/payout-beneficiaries",
+              "GET /v1/payout-beneficiaries",
+              "PATCH /v1/payout-beneficiaries/{id}/primary",
+              "DELETE /v1/payout-beneficiaries/{id}",
+              "POST /v1/payout-requests",
+              "GET /v1/payout-requests",
+              "GET /v1/payout-requests/{id}"
+            ]
+          },
+          {
+            "group": "Antecipações",
+            "pages": [
+              "GET /v1/advance/receivables",
+              "GET /v1/advance/eligibility",
+              "POST /v1/advance/quotes",
+              "POST /v1/advance/requests",
+              "GET /v1/advance/requests",
+              "GET /v1/advance/requests/{id}"
+            ]
+          },
+          {
+            "group": "Refunds & Disputas",
+            "pages": [
+              "POST /v1/refunds",
+              "GET /v1/refund-cases",
+              "GET /v1/refund-cases/{caseId}",
+              "POST /v1/refund-cases/{caseId}/merchant-approve",
+              "POST /v1/refund-cases/{caseId}/merchant-contest",
+              "POST /v1/refund-cases/{caseId}/merchant-responses"
+            ]
+          },
+          {
+            "group": "Chaves de API",
+            "pages": [
+              "POST /v1/iam/api-keys",
+              "GET /v1/iam/api-keys",
+              "POST /v1/iam/api-keys/{id}/rotate",
+              "DELETE /v1/iam/api-keys/{id}"
+            ]
+          },
+          {
+            "group": "Webhook Subscriptions",
+            "pages": [
+              "POST /v1/webhook-subscriptions",
+              "GET /v1/webhook-subscriptions",
+              "POST /v1/webhook-subscriptions/{id}/disable"
+            ]
+          },
+          {
+            "group": "Atividade",
+            "pages": ["GET /v1/activity"]
+          },
+          {
+            "group": "Sandbox (simulate)",
+            "pages": [
+              "POST /v1/sandbox/payment-intents/{id}/simulate",
+              "POST /v1/sandbox/payment-intents/{id}/cases/simulate",
+              "POST /v1/sandbox/payment-intents/{id}/webhooks/simulate",
+              "POST /v1/test/subscriptions/{id}/simulate"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Webhooks",
+        "groups": [
+          {
+            "group": "Fundamentos",
+            "pages": [
+              "webhooks/visao-geral",
+              "webhooks/assinatura",
+              "webhooks/catalogo-de-eventos",
+              "webhooks/retries"
+            ]
+          },
+          {
+            "group": "Gestão",
+            "pages": ["webhooks/gestao"]
+          }
+        ]
+      },
+      {
+        "tab": "Sandbox",
+        "groups": [
+          {
+            "group": "Testando sua integração",
+            "pages": [
+              "sandbox/visao-geral",
+              "sandbox/simulate",
+              "sandbox/casos-de-teste"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Recursos",
+        "groups": [
+          {
+            "group": "Aprenda",
+            "pages": [
+              "recursos/faq",
+              "recursos/glossario",
+              "recursos/changelog"
+            ]
+          },
+          {
+            "group": "Ajuda",
+            "pages": ["recursos/suporte"]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "playground": {
+      "mode": "show"
+    },
+    "examples": {
+      "prefill": true
+    }
+  },
+  "appearance": {
+    "default": "system",
+    "strict": false
+  },
+  "footer": {
+    "socials": {
+      "website": "https://korbit.com.br"
+    }
+  }
+}

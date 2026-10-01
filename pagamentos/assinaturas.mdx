@@ -1,0 +1,64 @@
+---
+title: "Assinaturas"
+description: "Vendas recorrentes: criação via checkout, faturas por ciclo, cancelamento e troca de plano."
+---
+
+Assinaturas são criadas a partir de uma [oferta](/catalogo-crm/produtos-e-ofertas) com cadência recorrente (mensal, anual…). A primeira cobrança acontece no checkout; as demais são agendadas automaticamente por ciclo, com [faturas](#faturas) que você pode consultar por API.
+
+## Ciclo de vida
+
+```mermaid
+flowchart LR
+  A[Checkout aprovado] --> B[ATIVA]
+  B --> C{Ciclo}
+  C -->|cobrança ok| B
+  C -->|falha| D[Retentativas]
+  D --> B
+  B -->|cancelamento| E[CANCELADA]
+```
+
+- **Criação**: comprador assina pelo [link de pagamento](/pagamentos/checkout-links) (ou sessão de checkout via API). O token de cartão recorrente é criado pelo provedor no primeiro pagamento.
+- **Cobranças**: cada ciclo gera uma fatura com o valor da oferta no momento da assinatura. PIX recorrente usa PIX Automático.
+- **Cancelamento**: pelo próprio comprador no [portal do cliente](#portal-do-cliente) ou por você via API.
+
+## Consultar e cancelar
+
+```bash
+# Lista com paginação e filtros
+curl "https://api.korbit.com.br/v1/subscriptions?status=ATIVA" \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Detalhe com histórico
+curl https://api.korbit.com.br/v1/subscriptions/{id} \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Cancelar
+curl -X POST https://api.korbit.com.br/v1/subscriptions/{id}/cancel \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)"
+```
+
+O cancelamento é **imediato** na Korbit (a assinatura não gera novas faturas). Confirmações chegam pelos eventos do produto — monitore também `refund.requested.v1`/`refund.updated.v1` caso o cancelamento venha acompanhado de contestação.
+
+## Faturas
+
+`GET /v1/subscriptions/{id}/invoices` retorna as faturas por ciclo, com valor, data e estado da cobrança correspondente — a base da sua conciliação de recorrência.
+
+## Portal do cliente
+
+O comprador pode gerenciar a assinatura (cancelar, trocar de plano) no portal hospedado da Korbit. Você controla o acesso criando e revogando sessões de portal por cliente:
+
+```bash
+# Abrir uma sessão de portal para o cliente
+curl -X POST https://api.korbit.com.br/v1/customer-portal-sessions \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{ "customerId": "…" }'
+
+# Revogar todas as sessões do cliente
+curl -X POST https://api.korbit.com.br/v1/customers/{id}/portal-sessions/revoke \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+Sessões de portal são links únicos, de curta duração e revogáveis — nunca armazene o token do portal no seu backend.

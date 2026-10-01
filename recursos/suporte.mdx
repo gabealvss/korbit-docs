@@ -1,0 +1,30 @@
+---
+title: "Suporte"
+description: "Como obter ajuda da equipe Korbit e o que incluir para resposta rápida."
+---
+
+## Canais
+
+<CardGroup cols={2}>
+  <Card title="Suporte técnico" icon="lifebuoy" href="mailto:suporte@korbit.com.br">
+    Dúvidas de integração, erros de API, webhooks. Resposta em dias úteis.
+  </Card>
+  <Card title="Status da plataforma" icon="activity">
+    Incidentes e manutenções são comunicados por e-mail aos contatos cadastrados da conta.
+  </Card>
+</CardGroup>
+
+## Para resposta rápida, inclua sempre
+
+1. **`requestId`** do campo de erro — sem ele a investigação fica lenta (veja [Erros](/guias/erros)).
+2. Ambiente (`kbt_test_` ou `kbt_live_`) e timestamp do incidente.
+3. Endpoint chamado e `Idempotency-Key` usada, quando aplicável.
+4. O que você esperava × o que aconteceu (resposta bruta ajuda muito).
+
+## Para reenvio de webhook
+
+Se a agenda de [retries](/webhooks/retries) esgotou, abra um chamado informando o período afetado e os eventos necessários — o reenvio é feito por mensagem de webhook identificada.
+
+## Sugestões de produto e documentação
+
+Este site é open-source friendly: sugestões de melhoria na documentação podem ser abertas como issue no repositório. Mudanças de produto/escopo seguem pelo contato comercial.

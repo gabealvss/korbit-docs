@@ -1,0 +1,79 @@
+---
+title: "Erros"
+description: "Formato de erro (RFC 7807) e catálogo dos códigos mais comuns da API Korbit."
+---
+
+A API Korbit reporta erros no formato **RFC 7807** (`application/problem+json`), com códigos estáveis que você pode usar em lógica de aplicação.
+
+## Formato
+
+```json 422 Unprocessable Entity
+{
+  "type": "https://docs.korbit.com.br/problems/idempotency-key-reused",
+  "title": "Idempotency key reused with a different payload",
+  "status": 409,
+  "detail": "The Idempotency-Key was already used with a different request body.",
+  "code": "IDEMPOTENCY_KEY_REUSED",
+  "instance": "/v1/payment-intents",
+  "requestId": "6c816eec-0f4b-40e1-afdd-141364e1a308"
+}
+```
+
+| Campo | Descrição |
+| --- | --- |
+| `type` | URI estável do tipo de problema |
+| `title` | Resumo legível |
+| `status` | Status HTTP |
+| `code` | **Código estável** — use-o na sua lógica, não o texto |
+| `detail` | Explicação contextual (pode variar; não exiba ao usuário final sem tratar) |
+| `requestId` | Identificador da requisição — **informe-o ao suporte** para investigação |
+
+## Códigos por status
+
+### 401 — Autenticação
+
+| Código | Causa |
+| --- | --- |
+| `INVALID_API_KEY` | Chave ausente, malformada, revogada, expirada ou de ambiente errado |
+| `DASHBOARD_SESSION_REQUIRED` | Rota exige sessão (não se aplica a chaves de API) |
+
+### 403 — Autorização
+
+| Código | Causa |
+| --- | --- |
+| `INSUFFICIENT_SCOPE` | A chave não possui o escopo exigido pela rota |
+| `MERCHANT_CAPABILITY_DISABLED` | A capacidade (ex.: pagamento por cartão) não está habilitada para sua conta |
+| `ACCOUNT_ACCESS_DENIED` | O papel/usuário não pode executar a operação |
+| `DASHBOARD_ORIGIN_DENIED` | Origem não permitida em rota de cookie (não se aplica a chaves de API) |
+
+### 404 / 409 / 422 — Recurso e validação
+
+| Código | Causa |
+| --- | --- |
+| `PAYMENT_INTENT_NOT_FOUND` | Payment intent não existe ou pertence a outra conta |
+| `COMMERCE_PRODUCT_NOT_FOUND` / `COMMERCE_CUSTOMER_NOT_FOUND` / `COMMERCE_SUBSCRIPTION_NOT_FOUND` | Recurso de catálogo/CRM não encontrado |
+| `PAYOUT_BENEFICIARY_NOT_FOUND` / `PAYOUT_NOT_FOUND` | Beneficiário ou saque não encontrado |
+| `REFUND_CASE_NOT_FOUND` | Caso de refund não encontrado |
+| `IDEMPOTENCY_KEY_REQUIRED` | Mutação exigiu `Idempotency-Key` e o header não veio |
+| `IDEMPOTENCY_KEY_REUSED` | Mesma chave com corpo diferente (409) |
+| `IDEMPOTENCY_IN_PROGRESS` | Requisição original ainda em processamento (409) — retry depois; veja `Retry-After` |
+| `CHECKOUT_SESSION_EXPIRED` | Sessão de checkout passou do TTL |
+| `CUSTOMER_EMAIL_TAKEN` | E-mail já cadastrado para outro cliente |
+| `INVALID_PIX_KEY` | Chave PIX do beneficiário inválida |
+| `INVALID_WEBHOOK_URL` | URL de webhook inválida (privada ou malformada) |
+| `WEBHOOK_SUBSCRIPTION_ALREADY_EXISTS` | Já existe assinatura para esta URL |
+
+### 429 / 503 — Limites e disponibilidade
+
+| Código | Causa |
+| --- | --- |
+| `RATE_LIMITED` | Excedeu o limite da rota — respeite `Retry-After` |
+| `RATE_LIMIT_UNAVAILABLE` | Indisponibilidade do limitador em comando protegido — falha fechada por segurança |
+| `ADDRESS_LOOKUP_UNAVAILABLE` | Consulta de endereço (Google Places) indisponível no momento |
+
+## Boas práticas
+
+1. **Decida pelo `code`**, nunca pelo texto do `detail`.
+2. **Registre o `requestId`** em seus logs — ele é a chave para investigação no suporte.
+3. `503 RATE_LIMIT_UNAVAILABLE` é temporário: recue e tente novamente com backoff.
+4. Não exponha `detail` cru a usuários finais; mapeie os códigos para mensagens do seu produto.

@@ -1,0 +1,38 @@
+---
+title: "Casos de teste recomendados"
+description: "Roteiro de testes para cobrir os cenários que importam antes do go-live."
+---
+
+Antes de operar em produção, exercite no sandbox — no mínimo — estes cenários. A coluna "verificação" indica como confirmar o resultado.
+
+## Caminho feliz
+
+| # | Cenário | Verificação |
+| --- | --- | --- |
+| 1 | Venda PIX via link de pagamento | Pedido `PAID` + `payment.succeeded.v1` verificado |
+| 2 | Venda cartão com 3DS | `cardAction` resolvido + confirmação |
+| 3 | Assinatura criada e primeira fatura | Assinatura `ATIVA` + fatura paga |
+| 4 | Payout solicitado | Saldo disponível reduzido na reserva |
+
+## Falhas e bordas
+
+| # | Cenário | Verificação |
+| --- | --- | --- |
+| 5 | Pagamento recusado ([simulate](/sandbox/simulate) `FAILED`) | `payment.failed.v1` + estado do pedido correto |
+| 6 | Pagamento expirado + nova tentativa | Novo intent criado com nova idempotency key |
+| 7 | Retry de rede na criação (mesmo `Idempotency-Key`) | **Um único** payment intent criado |
+| 8 | Mesma idempotency key com payload diferente | `409 IDEMPOTENCY_KEY_REUSED` |
+| 9 | Refund parcial e acumulado até o total | Soma dos refunds ≤ pago; reserva revertida em falha |
+| 10 | Webhook sem assinatura / assinatura adulterada | Seu endpoint rejeita com 4xx |
+| 11 | Seu endpoint fora do ar 10 min | Entrega recuperada nos [retries](/webhooks/retries); dedup do seu lado |
+| 12 | Assinatura com estado `ERROR` | Alerta configurado no seu monitoramento |
+
+## Segurança da integração
+
+| # | Cenário | Verificação |
+| --- | --- | --- |
+| 13 | Chave com escopo mínimo executa tudo do seu fluxo | Nenhum `403 INSUFFICIENT_SCOPE` |
+| 14 | Rotação de chave sem downtime | `gracePeriodSeconds` cobre o deploy |
+| 15 | Dados de comprador fictícios | Nenhum dado real pessoal no sandbox |
+
+Documente o resultado de cada caso — esse roteiro é a evidência mínima pedida no [go-live](/guias/go-live).

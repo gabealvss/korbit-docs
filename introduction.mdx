@@ -1,0 +1,59 @@
+---
+title: "Bem-vindo à Korbit"
+description: "Pagamentos por PIX e cartão, assinaturas e saques para negócios digitais no Brasil — via API."
+---
+
+A Korbit é a plataforma de pagamentos para negócios digitais e SaaS no Brasil. Com uma integração única você recebe **PIX**, **cartão de crédito com 3D Secure**, vende **assinaturas**, oferece **order bumps**, acompanha o **saldo e as liberações de recursos** e solicita **saques (payouts)** para a sua conta — tudo com idempotência, webhooks assinados e um ambiente sandbox completo.
+
+<CardGroup cols={2}>
+  <Card title="Sou lojista" icon="store" href="/guias/quickstart">
+    Entenda o fluxo completo: catálogo, link de pagamento, recebimento e saque. Comece pela visão geral dos produtos.
+  </Card>
+  <Card title="Sou dev" icon="code" href="/guias/quickstart">
+    Primeira chamada em minutos: autenticação, criação de um pagamento e webhooks. Referência completa da API incluída.
+  </Card>
+</CardGroup>
+
+## O que você pode construir
+
+<CardGroup cols={2}>
+  <Card title="Pagamentos únicos" icon="credit-card" href="/pagamentos/payment-intents">
+    PIX com QR Code e copia-e-cola, cartão de crédito parcelado com autenticação 3DS.
+  </Card>
+  <Card title="Links de pagamento" icon="link" href="/pagamentos/checkout-links">
+    Uma URL pública por oferta, pronta para compartilhar em redes sociais — o comprador fecha a compra na página hospedada da Korbit.
+  </Card>
+  <Card title="Assinaturas" icon="repeat" href="/pagamentos/assinaturas">
+    Cobranças recorrentes com troca de plano, faturas por ciclo e cancelamento.
+  </Card>
+  <Card title="Saldo e saques" icon="bank" href="/saldo-saques/balance">
+    Acompanhe liberações de recursos, cadastre chaves PIX e solicite payouts.
+  </Card>
+  <Card title="Antecipações" icon="clock" href="/antecipacoes/visao-geral">
+    Receba hoje o valor de recebíveis que só seriam liberados no futuro.
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/webhooks/visao-geral">
+    Eventos assinados (Svix) para cada mudança de estado relevante da sua operação.
+  </Card>
+</CardGroup>
+
+## Como a documentação está organizada
+
+<Tabs>
+  <Tab title="Guias">
+    Passo a passo por tarefa: [quickstart](/guias/quickstart), [autenticação](/guias/autenticacao), [erros](/guias/erros), [idempotência](/guias/idempotencia), [rate limits](/guias/rate-limits) e [go-live](/guias/go-live).
+  </Tab>
+  <Tab title="API Reference">
+    Referência completa e interativa gerada da nossa especificação OpenAPI — com playground para testar cada endpoint com a sua chave.
+  </Tab>
+  <Tab title="Webhooks e Sandbox">
+    [Catálogo de eventos, assinatura e retries](/webhooks/visao-geral) e o [fluxo de testes](/sandbox/visao-geral) com providers fake antes de operar em produção.
+  </Tab>
+</Tabs>
+
+## Princípios da API
+
+- **Valores sempre em inteiros** — todos os valores monetários são em centavos (`amount: 1499` = R$ 14,99), moeda BRL. Veja [Moeda e valores](/guias/moeda-e-valores).
+- **Idempotência nativa** — toda mutação aceita `Idempotency-Key`; retries são seguros por construção. Veja [Idempotência](/guias/idempotencia).
+- **Erros padronizados** — respostas seguem RFC 7807 (`application/problem+json`) com códigos estáveis. Veja [Erros](/guias/erros).
+- **Segurança por padrão** — chaves com escopo mínimo, separação total entre sandbox e produção, webhooks assinados.

@@ -1,0 +1,35 @@
+---
+title: "Exportações CSV"
+description: "Exportação assíncrona de clientes, pedidos e assinaturas em CSV."
+---
+
+A API oferece exportação em CSV para três entidades, úteis para conciliação, BI e importações em planilha:
+
+| Endpoint | Conteúdo |
+| --- | --- |
+| `GET /v1/customers/export.csv` | Clientes |
+| `GET /v1/orders/export.csv` | Pedidos |
+| `GET /v1/subscriptions/export.csv` | Assinaturas |
+
+## Exemplo
+
+```bash
+curl "https://api.korbit.com.br/v1/orders/export.csv?view=full&search=promo" \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -o pedidos.csv
+```
+
+## Parâmetros comuns
+
+| Parâmetro | Valores | Descrição |
+| --- | --- | --- |
+| `view` | depende da entidade | Define colunas incluídas (enum validado — veja a [reference](/api-reference)) |
+| `paymentMethod` | `PIX`, `CARD` | Filtro por método de pagamento (quando aplicável) |
+| `search` | texto (≤ 200 chars) | Filtro de busca aplicado antes da exportação |
+
+## Limites e comportamento
+
+- **Resposta streaming** (`text/csv`) com `Cache-Control: no-store` — processa a resposta como stream, não como buffer inteiro.
+- **Limite de linhas por export** (ver `429`/`413` em excesso) e rate limit dedicado.
+- **Proteção contra injeção de fórmula**: células que começam com `=`, `+`, `-`, `@`, tab ou CR são prefixadas com `'` para abrir com segurança em Excel/LibreOffice.
+- Use os mesmos filtros das listagens para reproduzir um recorte idêntico na exportação.

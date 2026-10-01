@@ -1,0 +1,38 @@
+---
+title: "Saldo e liberações"
+description: "Consulta de saldo, breakdown e calendário de liberação de recursos."
+---
+
+O saldo da sua conta é composto por transações já confirmadas e por **liberações de recursos** (funds releases) — o dinheiro disponível para saque após o ciclo de retenção/previsibilidade de cada recebimento.
+
+## Consultas
+
+```bash
+# Saldo disponível e a reter
+curl https://api.korbit.com.br/v1/balance \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+
+# Breakdown por componente (disponível, pendente, reservas)
+curl https://api.korbit.com.br/v1/balance/breakdown \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
+```
+
+## Liberações
+
+| Endpoint | Uso |
+| --- | --- |
+| `GET /v1/funds/releases` | Liberações com paginação e filtros |
+| `GET /v1/funds/releases/calendar` | Calendário de datas futuras de liberação |
+| `GET /v1/funds/releases/summary` | Totais por período — útil para projeção de caixa |
+
+A liberação pode ser **bloqueada** por eventos abertos (refunds em andamento, disputas, chargebacks): essas retenções aparecem no breakdown e são liberadas quando o evento se resolve.
+
+<Note>
+O saldo disponível é a fonte de verdade para saques. Uma solicitação de payout **reserva** o valor no momento da solicitação — duas solicitações concorrentes nunca excedem o disponível.
+</Note>
+
+## Próximos passos
+
+- Cadastrar chaves PIX de destino: [Beneficiários](/saldo-saques/beneficiarios).
+- Solicitar saques: [Payouts](/saldo-saques/payout-requests).
+- Receber hoje recebíveis futuros: [Antecipações](/antecipacoes/visao-geral).

@@ -1,0 +1,44 @@
+---
+title: "FAQ"
+description: "Perguntas frequentes sobre a API e a plataforma Korbit."
+---
+
+<Accordion title="Posso cobrar cartão direto pela API, sem página hospedada?">
+  A captura de dados de cartão acontece sempre na página de checkout hospedada da Korbit (iframes seguros do provedor). Isso mantém sua integração fora do escopo de PCI-DSS. Para fluxos sem página, use [sessões de checkout por API](/pagamentos/checkout-links) com os dados do comprador pré-preenchidos.
+</Accordion>
+
+<Accordion title="O comprador precisa ter conta na Korbit?">
+  Não. O link de pagamento é público: o comprador preenche os dados na hora e paga por PIX ou cartão.
+</Accordion>
+
+<Accordion title="Quanto tempo leva para o dinheiro ficar disponível?">
+  Depende do método e das regras de liberação da sua conta. Consulte [Saldo e liberações](/saldo-saques/balance) e o calendário `GET /v1/funds/releases/calendar`.
+</Accordion>
+
+<Accordion title="Preciso de HTTPS no meu webhook?">
+  Sim. URLs privadas (localhost, redes internas) são recusadas no cadastro. Seu endpoint deve estar publicamente acessível por HTTPS — veja [Gestão de assinaturas](/webhooks/gestao).
+</Accordion>
+
+<Accordion title="Webhook pode chegar mais de uma vez?">
+  Sim — a entrega é at-least-once por design. Deduplique pelo `id` do evento e verifique sempre a [assinatura](/webhooks/assinatura).
+</Accordion>
+
+<Accordion title="Perdi o segredo de uma chave de API. E agora?">
+  Rotacione: `POST /v1/iam/api-keys/{id}/rotate` cria um novo token e revoga o antigo após a carência. Segredos nunca são exibidos de novo. Veja [Autenticação](/guias/autenticacao).
+</Accordion>
+
+<Accordion title="Os dados do sandbox vazam para produção?">
+  Não. Ambientes são isolados: chaves, dados e provedores são independentes, e dados de sandbox são descartáveis por retenção.
+</Accordion>
+
+<Accordion title="A API tem SDK oficial?">
+  Ainda não publicamos SDKs — a API é REST/JSON com OpenAPI 3.1, e qualquer cliente HTTP funciona. Os exemplos da documentação usam `curl` e `fetch` justamente para serem portáveis.
+</Accordion>
+
+<Accordion title="Como testo recusas e expirações?">
+  No sandbox, com os endpoints de [simulação](/sandbox/simulate) — o desfecho dos pagamentos é controlado por você.
+</Accordion>
+
+<Accordion title="Onde acompanho mudanças na API?">
+  No [changelog](/recursos/changelog). Tipos de webhook são versionados (`.v1`): mudanças incompatíveis geram versão nova, nunca quebram a atual.
+</Accordion>

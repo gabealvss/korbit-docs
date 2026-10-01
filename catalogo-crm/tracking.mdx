@@ -1,0 +1,33 @@
+---
+title: "Tracking e pixels"
+description: "Integração de pixels de conversão (Meta, TikTok, Google) com atribuição correta."
+---
+
+A Korbit integra conversões de checkout com **pixels de anúncio** (Meta, TikTok, Google) no nível do produto: você cadastra o pixel e as credenciais de API por produto, e as conversões são reportadas **pelo servidor da Korbit após a liquidação do pagamento** — com atribuição correta e sem perder vendas por bloqueio de cookies no navegador do comprador.
+
+## Configurar
+
+```bash
+curl -X PUT https://api.korbit.com.br/v1/products/{id}/tracking-integrations \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "integrations": [
+      { "provider": "META", "pixelId": "1234567890", "hasAccessToken": true }
+    ]
+  }'
+```
+
+- Credenciais (access tokens) são enviadas uma vez e armazenadas **criptografadas** (AES-256-GCM com vinculação à sua conta e ao produto) — a API só retorna booleanos (`hasAccessToken`), nunca o token.
+- IDs de pixel são validados contra o alfabeto de cada provedor antes de entrar na página.
+- `GET /v1/products/{id}/tracking-events` lista os eventos reportados por produto — a base para conferir a atribuição.
+
+## Como a atribuição funciona
+
+1. O comprador chega ao checkout com parâmetros de atribuição na URL (`fbclid`, `ttclid`, UTM etc.). A página normaliza e armazena localmente (com TTL curto) respeitando **Do Not Track e Global Privacy Control**.
+2. Na conversão, a Korbit reporta o evento ao provedor **server-side**, usando os parâmetros coletados e as credenciais do produto.
+3. Eventos de navegador (pixel JS) não são duplicados pelo checkout — o report do servidor é a fonte.
+
+<Note>
+Higiene de dados: valores de atribuição só passam se corresponderem aos padrões estritos de cada provedor; qualquer coisa fora é descartada, não sanitizada.
+</Note>

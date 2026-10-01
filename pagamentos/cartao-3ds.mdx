@@ -1,0 +1,50 @@
+---
+title: "Cartão e 3D Secure"
+description: "Como funciona o pagamento por cartão, o desafio 3DS e os estados do cardAction."
+---
+
+Pagamentos por cartão são processados pelo Mercado Pago com **3D Secure** quando exigido pelo emissor. Os dados sensíveis do cartão nunca passam pela sua aplicação nem pela Korbit: são capturados em iframes seguros do provedor dentro da página de checkout.
+
+## Fluxo
+
+<Steps>
+  <Step title="Checkout">
+    O comprador preenche o cartão na página de checkout (iframe do provedor) e escolhe o parcelamento — limitado ao `maxInstallments` da oferta.
+  </Step>
+  <Step title="Tokenização">
+    O provedor retorna um token de uso único. Só o token trafega pela API Korbit — nunca o PAN ou CVV.
+  </Step>
+  <Step title="3DS (quando exigido)">
+    Se o emissor pedir autenticação, o checkout apresenta o desafio do banco (iframe sandboxed) e só prossegue após a conclusão.
+  </Step>
+  <Step title="Resultado">
+    O payment intent transita para `SUCCEEDED` ou `FAILED` e o evento correspondente é enviado ao seu endpoint.
+  </Step>
+</Steps>
+
+## cardAction
+
+Enquanto o desafio 3DS está pendente, o payment intent fica em `REQUIRES_ACTION` com um `cardAction` contendo a URL do desafio e a expiração:
+
+```json
+{
+  "status": "REQUIRES_ACTION",
+  "cardAction": {
+    "externalResourceUrl": "https://…",
+    "expiresAt": "2026-10-01T12:30:00Z"
+  }
+}
+```
+
+Na página de checkout hospedada da Korbit esse fluxo é automático. Se você construir sua própria experiência de consulta (ex.: retomar compra abandonada), direcione o comprador à sessão de checkout original — a conclusão do desafio **não** é autorização: o estado autoritativo sempre vem do status do payment intent e dos webhooks.
+
+## Parcelamento
+
+- O parcelamento é escolhido pelo comprador no checkout, limitado ao `maxInstallments` da [oferta](/catalogo-crm/produtos-e-ofertas).
+- O valor total cobrado é sempre o `amount` da compra — parcelar não altera o total.
+
+## Recusas e retentativas
+
+- Recusas chegam como `payment.failed.v1` (estado `FAILED`).
+- O comprador pode tentar novamente dentro da mesma sessão de checkout; a Korbit reserva a nova tentativa de forma segura (nunca dois resultados para o mesmo attempt).
+- No sandbox, recusas e aprovações são simuladas — veja [Simulação](/sandbox/simulate).

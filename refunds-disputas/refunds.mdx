@@ -1,0 +1,54 @@
+---
+title: "Refunds"
+description: "Criação de refunds, casos de revisão e prazos de resposta do merchant."
+---
+
+Um **refund** devolve parte ou todo o valor de um pagamento ao comprador. Na Korbit o refund passa por políticas de risco: dependendo do caso, é aprovado na hora ou abre um **caso de revisão** com prazo de resposta.
+
+## Solicitar
+
+```bash
+curl -X POST https://api.korbit.com.br/v1/refunds \
+  -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paymentIntentId": "…",
+    "amountMinor": 14990,
+    "reason": "produto_nao_entregue"
+  }'
+```
+
+Regras de valor:
+
+- O valor é sempre **menor ou igual** ao saldo restante do pagamento — refunds acumulados nunca excedem o total pago (validado transacionalmente).
+- `amountMinor` parcial cria refund parcial; o restante continua refundável.
+- O valor do refund é **reservado** antes de a execução começar: se a execução falhar, a reserva é revertida integralmente.
+
+## Modos de aprovação
+
+| Modo | Comportamento |
+| --- | --- |
+| `INSTANT` | Executa imediatamente (PIX) ou via provedor (cartão) |
+| `OPERATIONS` | Vai para revisão da Korbit antes de executar |
+| `RISK_POLICY` | Avaliado pelas políticas de risco da sua conta |
+
+O modo aplicado depende do pagamento, do valor e do histórico — a resposta da criação indica o caminho tomado.
+
+## Casos de revisão (refund cases)
+
+Quando o refund abre um caso, você tem um **prazo de resposta** (deadline informado no caso):
+
+- `POST /v1/refund-cases/{caseId}/merchant-approve` — concorda com o refund.
+- `POST /v1/refund-cases/{caseId}/merchant-contest` — contesta, com sua argumentação.
+- `POST /v1/refund-cases/{caseId}/merchant-responses` — responde pedidos adicionais de informação.
+
+Sem resposta dentro do prazo, o caso segue a política padrão da Korbit (pode resultar em refund automático). Acompanhe `refund.requested.v1` e `refund.updated.v1` para não perder o prazo.
+
+## Disputas e chargebacks
+
+Contestações abertas pelo comprador no banco (chargeback) e med (Money Exchange Dispute) chegam como [disputas](#) — evento `dispute.opened.v1` — e seguem fluxo próprio de evidência, com upload de documentos e prazos regulatórios. O impacto financeiro de chargebacks reserva o valor da mesma forma que refunds.
+
+<Note>
+Estados detalhados e schemas de cada endpoint estão na [API Reference](/api-reference), agrupados em "Refunds & Disputas".
+</Note>

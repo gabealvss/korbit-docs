@@ -1,0 +1,37 @@
+---
+title: "Visão geral de webhooks"
+description: "Receba eventos assinados da Korbit para cada mudança relevante da sua operação."
+---
+
+Webhooks são a forma **primária** de saber que algo aconteceu na sua conta: pagamento confirmado, refund solicitado, saque atualizado, disputa aberta. A API continua disponível para consulta — mas você não deve depender de polling.
+
+## Como funciona
+
+1. Você expõe um endpoint **HTTPS público** e registra uma assinatura de webhook informando a URL e os [tipos de evento](/webhooks/catalogo-de-eventos) de interesse.
+2. A Korbit entrega cada evento com **cabeçalhos de assinatura** (Svix) que permitem verificar autenticidade e integridade — veja [Verificação de assinatura](/webhooks/assinatura).
+3. Seu endpoint responde **2xx rápido** (< 5 s). Falhas entram na agenda de [retries](/webhooks/retries).
+
+## Boas práticas essenciais
+
+<Checklist>
+  <ChecklistItem title="Verifique a assinatura de todo evento">
+    Rejeite (HTTP 4xx) qualquer entrega sem assinatura válida — nunca processe por confiança na origem.
+  </ChecklistItem>
+  <ChecklistItem title="Trate entregas duplicadas">
+    A entrega é at-least-once: use o `id` do evento como chave de deduplicação no seu consumidor.
+  </ChecklistItem>
+  <ChecklistItem title="Responda 2xx antes de processar">
+    Valide assinatura, persista o evento e responda rápido; processe em background.
+  </ChecklistItem>
+  <ChecklistItem title="Estado autoritativo é a API">
+    Ao processar, confirme o estado atual do recurso por API se a decisão for sensível — o payload do evento é um aviso, não um estado final garantido.
+  </ChecklistItem>
+</Checklist>
+
+## Ambientes
+
+Sandbox e produção têm assinaturas e eventos **independentes**. Desenvolva com assinaturas `test` (e [simulação](/sandbox/simulate)), depois registre as mesmas URLs no ambiente live durante o [go-live](/guias/go-live).
+
+## Gestão
+
+Assinaturas são gerenciadas por API (criar, listar, desabilitar) — veja [Gestão de assinaturas](/webhooks/gestao).

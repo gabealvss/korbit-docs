@@ -1,0 +1,48 @@
+---
+title: "Rate limits"
+description: "Limites por rota, headers de resposta e como reagir a 429 e 503."
+---
+
+A API Korbit aplica **rate limits distribuídos** por rota, dimensionados pela sua conta (tenant), chave de API, rota e IP. Os identificadores nunca ficam em texto claro nos contadores.
+
+## Limites por rota
+
+| Rota | Limite |
+| --- | ---: |
+| Criar payment intent | 60/min |
+| Criar beneficiário | 10/min |
+| Solicitar payout | 5/min |
+| Criar, rotacionar ou revogar API key | 10/min |
+| Listar API keys | 60/min |
+| Webhook autenticado de cada PSP/IP | 300/min |
+
+Rotas públicas de checkout (acessadas pelo comprador, sem autenticação) possuem limites anônimos por IP — ex.: submeter checkout 12/min, resolver sessão 60/min.
+
+## Headers de resposta
+
+Todas as respostas limitadas incluem:
+
+```
+Rate-Limit-Limit: 60
+Rate-Limit-Remaining: 42
+Rate-Limit-Reset: 1699999999
+```
+
+## Reagindo a 429
+
+```json 429 Too Many Requests
+{
+  "code": "RATE_LIMITED",
+  "title": "Rate limit exceeded",
+  "status": 429,
+  "retryAfterSeconds": 23
+}
+```
+
+- Respeite o header **`Retry-After`** (em segundos).
+- Implemente backoff exponencial com jitter no seu cliente.
+- Se você atinge limites regularmente em operação legítima, entre em contato com o suporte para revisão de limites.
+
+## Falha fechada (503)
+
+Em comandos protegidos (movimentação de dinheiro), se o serviço de limitação estiver **indisponível**, a API retorna `503 RATE_LIMIT_UNAVAILABLE` em vez de permitir a operação sem limite — o contador é efêmero, mas a decisão financeira nunca é. Recue com backoff; a indisponibilidade é transitória.
