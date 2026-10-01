@@ -44,16 +44,16 @@
       "name": "Checkout"
     },
     {
-      "name": "Clientes"
+      "name": "Clientes e Pedidos"
     },
     {
       "name": "Pagamentos"
     },
     {
-      "name": "Refunds & Disputas"
+      "name": "Refunds e Disputas"
     },
     {
-      "name": "Saldo & Saques"
+      "name": "Saldo e Saques"
     },
     {
       "name": "Sandbox"
@@ -3762,7 +3762,7 @@
       "post": {
         "operationId": "createCommercePortalSession",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "requestBody": {
           "required": true,
@@ -4183,7 +4183,7 @@
       "post": {
         "operationId": "revokeCommercePortalSessions",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -5865,7 +5865,7 @@
       "get": {
         "operationId": "listCommerceOrders",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -6878,7 +6878,7 @@
       "get": {
         "operationId": "exportCommerceOrdersCsv",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "description": "Streams every row of the filtered list as CSV (semicolon-separated, UTF-8 with BOM). Read it as a stream; do not buffer it. Refused with 422 EXPORT_TOO_LARGE above 100000 rows.",
         "parameters": [
@@ -7154,7 +7154,7 @@
       "get": {
         "operationId": "exportCommerceCustomersCsv",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "description": "Streams every row of the filtered list as CSV (semicolon-separated, UTF-8 with BOM). Read it as a stream; do not buffer it. Refused with 422 EXPORT_TOO_LARGE above 100000 rows.",
         "parameters": [
@@ -8091,7 +8091,7 @@
       "get": {
         "operationId": "countCommerceOrderViews",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -8352,7 +8352,7 @@
       "get": {
         "operationId": "getCommerceOrder",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -10120,7 +10120,7 @@
       "post": {
         "operationId": "createCommerceCustomer",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "requestBody": {
           "required": true,
@@ -10929,7 +10929,7 @@
       "get": {
         "operationId": "listCommerceCustomers",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -11471,7 +11471,7 @@
       "get": {
         "operationId": "getCommerceCustomer",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -11935,7 +11935,7 @@
       "patch": {
         "operationId": "updateCommerceCustomer",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "requestBody": {
           "required": true,
@@ -12543,7 +12543,7 @@
       "post": {
         "operationId": "archiveCommerceCustomer",
         "tags": [
-          "Clientes"
+          "Clientes e Pedidos"
         ],
         "parameters": [
           {
@@ -21408,7 +21408,7 @@
       "get": {
         "operationId": "getMerchantBalance",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "security": [
           {
@@ -21571,7 +21571,7 @@
       "get": {
         "operationId": "getMerchantBalanceBreakdown",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "security": [
           {
@@ -21768,7 +21768,7 @@
       "get": {
         "operationId": "listFundsReleases",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -22102,7 +22102,7 @@
       "get": {
         "operationId": "getFundsReleaseCalendar",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -22341,7 +22341,7 @@
       "get": {
         "operationId": "getFundsReleaseSummary",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -24583,7 +24583,7 @@
       "get": {
         "operationId": "listPayoutBeneficiaries",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "security": [
           {
@@ -24785,7 +24785,7 @@
       "post": {
         "operationId": "createPayoutBeneficiary",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "requestBody": {
           "required": true,
@@ -25289,7 +25289,7 @@
       "patch": {
         "operationId": "setPrimaryPayoutBeneficiary",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -25517,7 +25517,7 @@
       "delete": {
         "operationId": "disablePayoutBeneficiary",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -25745,7 +25745,7 @@
       "get": {
         "operationId": "listPayoutRequests",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -26021,7 +26021,7 @@
       "post": {
         "operationId": "createPayoutRequest",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "requestBody": {
           "required": true,
@@ -26545,7 +26545,7 @@
       "get": {
         "operationId": "getPayoutRequest",
         "tags": [
-          "Saldo & Saques"
+          "Saldo e Saques"
         ],
         "parameters": [
           {
@@ -26787,7 +26787,7 @@
       "post": {
         "operationId": "createMerchantRefund",
         "tags": [
-          "Refunds & Disputas"
+          "Refunds e Disputas"
         ],
         "requestBody": {
           "required": true,
@@ -27681,7 +27681,7 @@
       "post": {
         "operationId": "approveCustomerRefundAsMerchant",
         "tags": [
-          "Refunds & Disputas"
+          "Refunds e Disputas"
         ],
         "requestBody": {
           "required": true,
@@ -28573,7 +28573,7 @@
       "post": {
         "operationId": "contestCustomerRefundAsMerchant",
         "tags": [
-          "Refunds & Disputas"
+          "Refunds e Disputas"
         ],
         "requestBody": {
           "required": true,
@@ -29477,7 +29477,7 @@
       "post": {
         "operationId": "addMerchantRefundResponse",
         "tags": [
-          "Refunds & Disputas"
+          "Refunds e Disputas"
         ],
         "requestBody": {
           "required": true,
@@ -30431,7 +30431,7 @@
       "get": {
         "operationId": "listMerchantRefundCases",
         "tags": [
-          "Refunds & Disputas"
+          "Refunds e Disputas"
         ],
         "parameters": [
           {
@@ -30962,7 +30962,7 @@
       "get": {
         "operationId": "getMerchantRefundCase",
         "tags": [
-          "Refunds & Disputas"
+          "Refunds e Disputas"
         ],
         "parameters": [
           {

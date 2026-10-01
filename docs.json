@@ -71,7 +71,7 @@
             ]
           },
           {
-            "group": "Clientes & Pedidos",
+            "group": "Clientes e Pedidos",
             "pages": [
               "POST /v1/customers",
               "GET /v1/customers",
@@ -113,7 +113,7 @@
             ]
           },
           {
-            "group": "Saldo & Saques",
+            "group": "Saldo e Saques",
             "pages": [
               "GET /v1/balance",
               "GET /v1/balance/breakdown",
@@ -141,7 +141,7 @@
             ]
           },
           {
-            "group": "Refunds & Disputas",
+            "group": "Refunds e Disputas",
             "pages": [
               "POST /v1/refunds",
               "GET /v1/refund-cases",
