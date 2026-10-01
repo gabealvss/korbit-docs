@@ -282,5 +282,14 @@
     "light": "/images/Korbit_Logo_Default_Ultraviolet.svg",
     "dark": "/images/Korbit_Logo_Default_Offwhite.svg",
     "href": "https://korbit.com.br"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Geist",
+      "weight": 700
+    },
+    "body": {
+      "family": "DM Sans"
+    }
   }
 }
