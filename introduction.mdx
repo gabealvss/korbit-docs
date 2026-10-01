@@ -4,57 +4,165 @@ description: "Pagamentos por PIX e cartão, assinaturas e saques para negócios 
 mode: "custom"
 ---
 
-A Korbit é a plataforma de pagamentos para negócios digitais e SaaS no Brasil. Com uma integração única você recebe **PIX**, **cartão de crédito com 3D Secure**, vende **assinaturas**, oferece **order bumps**, acompanha o **saldo e as liberações de recursos** e solicita **saques (payouts)** para a sua conta — tudo com idempotência, webhooks assinados e um ambiente sandbox completo.
+{/* ─────────────────────────────── HERO ─────────────────────────────── */}
+<div className="relative overflow-hidden border-b border-gray-950/10 dark:border-white/10 bg-gradient-to-br from-[#6D3AF2] via-[#5A2ED6] to-[#3F1FA8]">
+  <div className="max-w-4xl mx-auto text-center px-6 pt-16 pb-20">
+    <img
+      src="/images/Korbit_Logo_Default_Offwhite.svg"
+      alt="Korbit"
+      className="h-9 md:h-10 mx-auto mb-10"
+    />
+    <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-5">
+      Documentação da Korbit
+    </h1>
+    <p className="text-lg text-white/80 max-w-2xl mx-auto font-normal leading-relaxed mb-10">
+      Receba pagamentos por PIX e cartão, venda assinaturas e saque direto
+      para PIX — tudo via API, com idempotência nativa e webhooks assinados.
+      Seja você lojista ou desenvolvedor, encontre aqui o que precisa.
+    </p>
+    <div className="flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/guias/quickstart"
+        className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#3F1FA8] hover:bg-white/90 transition-colors"
+      >
+        Fazer a primeira venda
+        <span aria-hidden="true">→</span>
+      </a>
+      <a
+        href="/api-reference/introducao"
+        className="inline-flex items-center gap-2 rounded-xl border border-white/40 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+      >
+        API Reference
+      </a>
+    </div>
+  </div>
+</div>
 
-<CardGroup cols={2}>
-  <Card title="Sou lojista" icon="store" href="/guias/quickstart">
-    Entenda o fluxo completo: catálogo, link de pagamento, recebimento e saque. Comece pela visão geral dos produtos.
-  </Card>
-  <Card title="Sou dev" icon="code" href="/guias/quickstart">
-    Primeira chamada em minutos: autenticação, criação de um pagamento e webhooks. Referência completa da API incluída.
-  </Card>
-</CardGroup>
+{/* ───────────────────────── PERSONAS ───────────────────────── */}
+<div className="max-w-4xl mx-auto px-6 py-16">
+  <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">
+    Por onde você quer começar?
+  </h2>
+  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-10">
+    Escolha o caminho que faz mais sentido para você agora.
+  </p>
+  <div className="grid md:grid-cols-2 gap-4">
+    <a href="/guias/quickstart" className="no-underline group">
+      <div className="h-full p-7 rounded-2xl border-2 border-[#6D3AF2] bg-[#6D3AF2]/[0.06] dark:bg-[#6D3AF2]/[0.12] transition-transform group-hover:-translate-y-0.5">
+        <div className="text-3xl mb-4">🛍️</div>
+        <div className="text-lg font-bold text-[#6D3AF2] dark:text-[#A78BFA] mb-2">
+          Sou lojista / empreendedor
+        </div>
+        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+          Quero entender o produto, criar links de pagamento e receber por PIX
+          e cartão — sem precisar saber programar.
+        </div>
+        <div className="text-sm font-semibold text-[#6D3AF2] dark:text-[#A78BFA]">
+          Começar por aqui →
+        </div>
+      </div>
+    </a>
+    <a href="/api-reference/introducao" className="no-underline group">
+      <div className="h-full p-7 rounded-2xl border border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/[0.03] transition-transform group-hover:-translate-y-0.5">
+        <div className="text-3xl mb-4">💻</div>
+        <div className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+          Sou desenvolvedor
+        </div>
+        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+          Quero integrar a API, receber webhooks assinados e automatizar
+          cobranças, payouts e conciliação no meu sistema.
+        </div>
+        <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 group-hover:text-[#6D3AF2] dark:group-hover:text-[#A78BFA]">
+          Ver documentação técnica →
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
 
-## O que você pode construir
+{/* ───────────────────────── O QUE É A KORBIT ───────────────────────── */}
+<div className="max-w-5xl mx-auto px-6 py-16 border-t border-gray-950/5 dark:border-white/[0.06]">
+  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+    O que é a Korbit?
+  </h2>
+  <p className="text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl mb-8">
+    A Korbit é a plataforma de pagamentos para negócios digitais e SaaS no
+    Brasil. Com uma integração única você recebe <strong>PIX</strong> e{" "}
+    <strong>cartão com 3D Secure</strong>, vende <strong>assinaturas</strong>,
+    oferece <strong>order bumps</strong>, acompanha o{" "}
+    <strong>saldo e as liberações de recursos</strong> e solicita{" "}
+    <strong>saques</strong> para PIX — com um ambiente sandbox completo antes
+    de operar de verdade.
+  </p>
+  <CodeGroup>
+    ```bash curl
+    curl -X POST https://api.korbit.com.br/v1/payment-intents \
+      -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR" \
+      -H "Idempotency-Key: 7f3b9c1e-2a4d-4e8f-9b0a-1c2d3e4f5a6b" \
+      -H "Content-Type: application/json" \
+      -d '{ "amount": 14990, "currency": "BRL", "paymentMethod": "PIX" }'
+    ```
+  </CodeGroup>
 
-<CardGroup cols={2}>
-  <Card title="Pagamentos únicos" icon="credit-card" href="/pagamentos/payment-intents">
-    PIX com QR Code e copia-e-cola, cartão de crédito parcelado com autenticação 3DS.
-  </Card>
-  <Card title="Links de pagamento" icon="link" href="/pagamentos/checkout-links">
-    Uma URL pública por oferta, pronta para compartilhar em redes sociais — o comprador fecha a compra na página hospedada da Korbit.
-  </Card>
-  <Card title="Assinaturas" icon="repeat" href="/pagamentos/assinaturas">
-    Cobranças recorrentes com troca de plano, faturas por ciclo e cancelamento.
-  </Card>
-  <Card title="Saldo e saques" icon="bank" href="/saldo-saques/balance">
-    Acompanhe liberações de recursos, cadastre chaves PIX e solicite payouts.
-  </Card>
-  <Card title="Antecipações" icon="clock" href="/antecipacoes/visao-geral">
-    Receba hoje o valor de recebíveis que só seriam liberados no futuro.
-  </Card>
-  <Card title="Webhooks" icon="bell" href="/webhooks/visao-geral">
-    Eventos assinados (Svix) para cada mudança de estado relevante da sua operação.
-  </Card>
-</CardGroup>
+  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-14 mb-6">
+    O que você pode construir
+  </h2>
+  <CardGroup cols={2}>
+    <Card title="Pagamentos únicos" icon="credit-card" href="/pagamentos/payment-intents">
+      PIX com QR Code e copia-e-cola, cartão de crédito parcelado com autenticação 3DS.
+    </Card>
+    <Card title="Links de pagamento" icon="link" href="/pagamentos/checkout-links">
+      Uma URL pública por oferta, pronta para compartilhar em redes sociais — o comprador fecha a compra na página hospedada da Korbit.
+    </Card>
+    <Card title="Assinaturas" icon="repeat" href="/pagamentos/assinaturas">
+      Cobranças recorrentes com troca de plano, faturas por ciclo e cancelamento.
+    </Card>
+    <Card title="Saldo e saques" icon="bank" href="/saldo-saques/balance">
+      Acompanhe liberações de recursos, cadastre chaves PIX e solicite payouts.
+    </Card>
+    <Card title="Antecipações" icon="clock" href="/antecipacoes/visao-geral">
+      Receba hoje o valor de recebíveis que só seriam liberados no futuro.
+    </Card>
+    <Card title="Webhooks" icon="bell" href="/webhooks/visao-geral">
+      Eventos assinados (Svix) para cada mudança de estado relevante da sua operação.
+    </Card>
+  </CardGroup>
+</div>
 
-## Como a documentação está organizada
+{/* ───────────────────────── PRINCÍPIOS ───────────────────────── */}
+<div className="max-w-5xl mx-auto px-6 pb-24 pt-4 border-t border-gray-950/5 dark:border-white/[0.06] mt-16">
+  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-14 mb-6">
+    Princípios da API
+  </h2>
+  <CardGroup cols={2}>
+    <Card title="Valores sempre em inteiros" icon="coins">
+      Todos os valores monetários são em centavos (BRL): `amount: 14990` = R$ 149,90. Sem ponto flutuante, sem surpresa.
+    </Card>
+    <Card title="Idempotência nativa" icon="key">
+      Toda mutação aceita `Idempotency-Key` — retries, timeouts e duplo clique nunca criam a cobrança duas vezes.
+    </Card>
+    <Card title="Erros padronizados" icon="triangle-alert">
+      Respostas seguem RFC 7807 (`application/problem+json`) com códigos estáveis para sua lógica de aplicação.
+    </Card>
+    <Card title="Segurança por padrão" icon="shield-check">
+      Chaves com escopo mínimo, separação total entre sandbox e produção, e webhooks assinados em toda entrega.
+    </Card>
+  </CardGroup>
 
-<Tabs>
-  <Tab title="Guias">
-    Passo a passo por tarefa: [quickstart](/guias/quickstart), [autenticação](/guias/autenticacao), [erros](/guias/erros), [idempotência](/guias/idempotencia), [rate limits](/guias/rate-limits) e [go-live](/guias/go-live).
-  </Tab>
-  <Tab title="API Reference">
-    Referência completa e interativa gerada da nossa especificação OpenAPI — com playground para testar cada endpoint com a sua chave.
-  </Tab>
-  <Tab title="Webhooks e Sandbox">
-    [Catálogo de eventos, assinatura e retries](/webhooks/visao-geral) e o [fluxo de testes](/sandbox/visao-geral) com providers fake antes de operar em produção.
-  </Tab>
-</Tabs>
-
-## Princípios da API
-
-- **Valores sempre em inteiros** — todos os valores monetários são em centavos (`amount: 1499` = R$ 14,99), moeda BRL. Veja [Moeda e valores](/guias/moeda-e-valores).
-- **Idempotência nativa** — toda mutação aceita `Idempotency-Key`; retries são seguros por construção. Veja [Idempotência](/guias/idempotencia).
-- **Erros padronizados** — respostas seguem RFC 7807 (`application/problem+json`) com códigos estáveis. Veja [Erros](/guias/erros).
-- **Segurança por padrão** — chaves com escopo mínimo, separação total entre sandbox e produção, webhooks assinados.
+  <div className="mt-14 rounded-2xl border border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/[0.03] p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div>
+      <div className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+        Pronto para a primeira venda?
+      </div>
+      <div className="text-sm text-gray-600 dark:text-gray-400">
+        Do cadastro ao pagamento confirmado em menos de 10 minutos.
+      </div>
+    </div>
+    <a
+      href="/guias/quickstart"
+      className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-[#6D3AF2] px-5 py-3 text-sm font-semibold text-white hover:bg-[#5A2ED6] transition-colors no-underline"
+    >
+      Ir para o quickstart <span aria-hidden="true">→</span>
+    </a>
+  </div>
+</div>
