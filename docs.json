@@ -292,7 +292,8 @@
   },
   "footer": {
     "socials": {
-      "website": "https://korbit.com.br"
+      "website": "https://korbit.com.br",
+      "github": "https://github.com/korbitbr"
     }
   },
   "icons": {
@@ -324,7 +325,13 @@
       "type": "button",
       "label": "Dashboard",
       "href": "https://app.korbit.com.br"
-    }
+    },
+    "links": [
+      {
+        "href": "https://github.com/korbitbr",
+        "label": "GitHub"
+      }
+    ]
   },
   "contextual": {
     "options": [
