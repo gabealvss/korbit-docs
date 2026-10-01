@@ -1,0 +1,42 @@
+---
+title: "Skills"
+description: "Pacotes de contexto SKILL.md que ensinam seu agente de código a integrar a Korbit do jeito certo — sem chave de API."
+---
+
+Skills são **pacotes de contexto** no formato padrão `SKILL.md` que você coloca no projeto e o seu assistente de código (Claude Code, Cursor, Codex) passa a seguir ao escrever integrações com a Korbit: regras de negócio, armadilhas e código pronto.
+
+Diferente do [MCP server](/ia/mcp), skills **não executam nada e não precisam de chave de API** — elas garantem que o código gerado pela IA nasce correto: idempotência desde a primeira linha, valores em centavos, webhook com verificação de assinatura, ambiente certo.
+
+## Instalação
+
+```bash
+git clone https://github.com/korbit/korbit-skills.git
+mkdir -p .claude/skills
+cp -r korbit-skills/skills/* .claude/skills/
+```
+
+Para Cursor e outros editores, adicione o caminho `skills/` às regras do projeto (`.cursorrules` ou equivalente).
+
+<Tip>
+Instale todas as skills: elas se referenciam entre si e a `korbit-api-basics` é a base conceitual das demais.
+</Tip>
+
+## As sete skills
+
+| Skill | O que o agente passa a saber |
+| --- | --- |
+| `korbit-api-basics` | Autenticação por ambiente (`kbt_live_`/`kbt_test_`), centavos inteiros, idempotência obrigatória com retry seguro, erros RFC 7807 por `code`, rate limits com backoff |
+| `korbit-payments` | Criar payment intent PIX (QR + copia-e-cola, expiração), cartão **sempre** via checkout hospedado com 3DS, conciliação por `externalReference` |
+| `korbit-checkout` | Sequência certa do catálogo (produto → preço versionado → oferta → publicar), links de pagamento, order bumps, uploads de imagem em 3 passos |
+| `korbit-subscriptions` | Ciclo de recorrência, faturas por ciclo, cancelamento imediato, sessões do portal do cliente |
+| `korbit-webhooks` | Verificação de assinatura Svix com código pronto (corpo bruto!), deduplicação por `id`, agenda de retries, catálogo dos 13 eventos |
+| `korbit-payouts` | Saldo e liberações, beneficiários PIX mascarados, reserva transacional do saque, ciclo de aprovação, antecipações |
+| `korbit-refunds` | Refunds parciais com reserva, modos de aprovação, prazos de resposta em casos, contestações |
+
+## Skills + MCP juntos
+
+A combinação mais completa: o **MCP** para o agente operar a conta (consultar pedidos, criar cobranças de teste no sandbox) e as **skills** para ele escrever a integração final do seu produto com todas as regras — o MCP mostra, a skill ensina a codificar.
+
+<Note>
+As skills seguem o formato padrão `SKILL.md` (frontmatter `name`/`description`), o mesmo usado por assistentes de código modernos — nenhum plugin proprietário é necessário.
+</Note>

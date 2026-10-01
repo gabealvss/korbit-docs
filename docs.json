@@ -16,11 +16,15 @@
     "tabs": [
       {
         "tab": "Início",
-        "pages": ["introduction"]
+        "pages": [
+          "introduction"
+        ]
       },
       {
         "tab": "A Plataforma",
-        "pages": ["plataforma/visao-geral"]
+        "pages": [
+          "plataforma/visao-geral"
+        ]
       },
       {
         "tab": "Guias",
@@ -45,7 +49,9 @@
           },
           {
             "group": "Indo para produção",
-            "pages": ["guias/go-live"]
+            "pages": [
+              "guias/go-live"
+            ]
           }
         ]
       },
@@ -55,7 +61,9 @@
         "groups": [
           {
             "group": "Visão geral",
-            "pages": ["api-reference/introducao"]
+            "pages": [
+              "api-reference/introducao"
+            ]
           },
           {
             "group": "Pagamentos",
@@ -191,7 +199,10 @@
           },
           {
             "group": "Atividade",
-            "pages": ["api-reference/atividade", "GET /v1/activity"]
+            "pages": [
+              "api-reference/atividade",
+              "GET /v1/activity"
+            ]
           },
           {
             "group": "Sandbox (simulate)",
@@ -219,7 +230,9 @@
           },
           {
             "group": "Gestão",
-            "pages": ["webhooks/gestao"]
+            "pages": [
+              "webhooks/gestao"
+            ]
           }
         ]
       },
@@ -249,8 +262,18 @@
           },
           {
             "group": "Ajuda",
-            "pages": ["recursos/suporte"]
+            "pages": [
+              "recursos/suporte"
+            ]
           }
+        ]
+      },
+      {
+        "tab": "IA",
+        "pages": [
+          "ia/visao-geral",
+          "ia/mcp",
+          "ia/skills"
         ]
       }
     ]

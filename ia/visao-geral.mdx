@@ -1,0 +1,49 @@
+---
+title: "Korbit para agentes de IA"
+description: "MCP server e skills para usar a Korbit com Claude, Cursor, Codex e outros agentes de IA."
+---
+
+A documentação da Korbit é feita para humanos **e para máquinas**. Além das páginas desta documentação, mantemos duas ferramentas oficiais para agentes de IA — cada uma resolve um problema diferente:
+
+<CardGroup cols={2}>
+  <Card title="MCP Server" icon="plug" href="/ia/mcp">
+    Executa operações reais na sua conta Korbit a partir de uma conversa: consultar saldo, criar cobrança PIX, cadastrar cliente, acompanhar saques. Com **segurança por padrão**: movimentação de dinheiro só funciona se você ligar explicitamente.
+  </Card>
+  <Card title="Skills" icon="graduation-cap" href="/ia/skills">
+    Pacotes de contexto que ensinam o seu assistente de código a integrar a Korbit **do jeito certo** — centavos, idempotência, verificação de webhooks. Não precisa de chave de API.
+  </Card>
+</CardGroup>
+
+## MCP ou Skills?
+
+| | MCP Server | Skills |
+| --- | --- | --- |
+| Objetivo | **Executar** operações na sua conta | **Gerar código** de integração correto |
+| Ideal para | Automações, assistentes, operação do dia a dia | IDEs com IA (Cursor, Claude Code, Codex) durante o desenvolvimento |
+| Formato | Ferramentas MCP em runtime | Arquivos `SKILL.md` no contexto do editor |
+| Chave de API | Sim (`KORBIT_API_KEY`) | Não |
+| Movimenta dinheiro? | Somente com a flag de segurança ativada | Não (gera código, não executa) |
+
+<Checklist>
+  <ChecklistItem title="Instalando os dois? Comece pelo sandbox">
+    Use chave `kbt_test_` no MCP enquanto desenvolve — nada move dinheiro real. Ver [MCP Server](/ia/mcp).
+  </ChecklistItem>
+</Checklist>
+
+## Descoberta por máquinas
+
+Esta documentação expõe **`llms.txt`** — um índice machine-readable de todas as páginas, no endereço `https://docs.korbit.com.br/llms.txt`. Ferramentas de IA podem descobrir e navegar toda a documentação a partir dele. Cada página também possui versão em markdown puro (`.md`) para consumo direto por agentes.
+
+## Ecossistema
+
+<CardGroup cols={3}>
+  <Card title="Documentação" icon="book" href="/introduction">
+    Guias e referência completa da API — a fonte autoritativa para humanos e agentes.
+  </Card>
+  <Card title="Repositório do MCP" icon="code">
+    Código-fonte aberto do servidor MCP (`@korbit/mcp`) — contribuições bem-vindas.
+  </Card>
+  <Card title="Repositório de Skills" icon="folder-open">
+    As skills em formato padrão `SKILL.md`, prontas para copiar para o seu projeto.
+  </Card>
+</CardGroup>
