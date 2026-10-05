@@ -43,26 +43,138 @@ Os tipos de evento são versionados (`*.v1`) — mudanças incompatíveis geram 
 | `merchant.kyc.updated.v1` | Progresso da verificação KYC/KYB |
 | `merchant.status.updated.v1` | Status/capacidades da conta mudaram |
 
+## Assinaturas recorrentes
+
+Eventos do ciclo de vida das [assinaturas](/pagamentos/assinaturas) que seus clientes contratam. Cada fato do ciclo de vida gera um evento, publicado no ambiente (`test` ou `live`) da própria assinatura.
+
+| Evento | Quando dispara | `status` no payload |
+| --- | --- | --- |
+| `subscription.created.v1` | O checkout criou a assinatura, que aguarda o primeiro pagamento | `PENDING_AUTHORIZATION` |
+| `subscription.activated.v1` | O primeiro pagamento foi aprovado | `ACTIVE` |
+| `subscription.renewed.v1` | Uma renovação foi paga, inclusive quando uma retentativa recupera uma assinatura em atraso | `ACTIVE` |
+| `subscription.payment_failed.v1` | A primeira cobrança ou uma renovação foi recusada | `PENDING_AUTHORIZATION` ou `PAST_DUE` |
+| `subscription.canceled.v1` | As renovações foram interrompidas. O comprador mantém acesso até `access_until` | `CANCELED` |
+| `subscription.expired.v1` | O acesso terminou | `EXPIRED` |
+| `subscription.plan_change_scheduled.v1` | Uma troca de plano foi agendada para o próximo ciclo | status atual (em geral `ACTIVE`) |
+
+<Tip>
+Para liberar ou bloquear acesso ao seu produto, use `access_until`, não só o `status`: uma assinatura `PAST_DUE` (em carência) ou `CANCELED` continua com acesso até essa data. O acesso termina de fato quando chega `subscription.expired.v1`.
+</Tip>
+
+### Campos do payload
+
+O objeto `data` é um snapshot da assinatura no momento do evento. Campos sem valor são **omitidos** (não chegam como `null`).
+
+| Campo | Tipo | Descrição |
+| --- | --- | --- |
+| `id` | UUID | ID da assinatura, o mesmo de `GET /v1/subscriptions/{id}` |
+| `status` | string | `PENDING_AUTHORIZATION`, `ACTIVE`, `PAST_DUE`, `CANCELED` ou `EXPIRED` |
+| `version` | inteiro | Versão da assinatura. Cresce a cada mudança; use para ordenar eventos (veja abaixo) |
+| `order_id`, `customer_id` | UUID | Pedido de origem e cliente |
+| `product_id`, `offer_id`, `price_id` | UUID | Produto, oferta e preço contratados |
+| `amount_minor` | inteiro | Valor do plano em centavos |
+| `currency` | string | Sempre `BRL` |
+| `payment_method` | string | `CARD` ou `PIX` (Pix Automático) |
+| `billing_interval`, `interval_count` | string, inteiro | Cadência: `MONTH` com 1 (mensal) ou 3 (trimestral), ou `YEAR` com 1 (anual) |
+| `current_period_start`, `current_period_end` | data ISO 8601 | Ciclo vigente |
+| `access_until` | data ISO 8601 | Até quando o comprador tem acesso |
+| `next_billing_at` | data ISO 8601 | Próxima cobrança agendada, se houver |
+| `cancel_at_period_end` | booleano | A assinatura termina ao fim do ciclo atual |
+| `renewal_stopped_at` | data ISO 8601 | Quando as renovações foram interrompidas |
+| `scheduled_price_id` | UUID | Preço que entra no próximo ciclo (`plan_change_scheduled`) |
+| `invoice_id`, `payment_intent_id` | UUID | Fatura e cobrança que originaram o evento (pagamentos e falhas) |
+| `cancellation_reason` | string | Só em `subscription.canceled.v1`. Veja os valores abaixo |
+| `expiration_reason` | string | Só em `subscription.expired.v1`. Veja os valores abaixo |
+
+**`cancellation_reason`**
+
+| Valor | Significado |
+| --- | --- |
+| `MERCHANT_REQUEST` | Você cancelou, pelo painel ou por `POST /v1/subscriptions/{id}/cancel` |
+| `CUSTOMER_REQUEST` | O comprador cancelou no portal do cliente |
+| `INITIAL_PAYMENT_FAILED` | A primeira cobrança não foi concluída |
+| `ACCOUNT_RESTRICTED` | A conta foi bloqueada e suas assinaturas foram encerradas |
+| `PROVIDER_CANCELED` | A autorização recorrente foi cancelada fora da Korbit: pelo comprador no app do banco (Pix Automático) ou pelo próprio meio de pagamento |
+
+**`expiration_reason`**
+
+| Valor | Significado |
+| --- | --- |
+| `CANCELED_ACCESS_ENDED` | Uma assinatura cancelada chegou ao fim do período pago |
+| `GRACE_PERIOD_ENDED` | A carência de uma assinatura em atraso (`PAST_DUE`) acabou sem pagamento |
+
+### Ordem e duplicidade
+
+Webhooks podem chegar fora de ordem ou repetidos. Guarde o maior `version` processado por assinatura e ignore eventos com `version` menor ou igual. Para deduplicar a entrega em si, use o `id` do envelope.
+
+```json subscription.renewed.v1
+{
+  "id": "6f1c1a52-5b0e-4d2b-9a57-0b9a6f0d8c11",
+  "type": "subscription.renewed.v1",
+  "occurred_at": "2026-11-04T12:00:03.120Z",
+  "environment": "live",
+  "data": {
+    "id": "3b9d6f0e-2a41-4c7a-8f0e-7d1c2b3a4e55",
+    "status": "ACTIVE",
+    "version": 3,
+    "order_id": "9a2e4c71-0d3b-4f6a-b1e8-5c7d9e0f1a22",
+    "customer_id": "c4d5e6f7-8a9b-4c0d-9e1f-2a3b4c5d6e77",
+    "product_id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a88",
+    "offer_id": "f0e1d2c3-b4a5-4968-8776-5a4b3c2d1e99",
+    "price_id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f7a8b9c00",
+    "amount_minor": 2900,
+    "currency": "BRL",
+    "payment_method": "CARD",
+    "billing_interval": "MONTH",
+    "interval_count": 1,
+    "current_period_start": "2026-11-04T12:00:00+00:00",
+    "current_period_end": "2026-12-04T12:00:00+00:00",
+    "access_until": "2026-12-04T12:00:00+00:00",
+    "next_billing_at": "2026-12-04T12:00:00+00:00",
+    "cancel_at_period_end": false,
+    "invoice_id": "0d1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6",
+    "payment_intent_id": "1e2f3a4b-5c6d-4e7f-9a80-b1c2d3e4f5a6"
+  }
+}
+```
+
+### Testar no sandbox
+
+Com uma assinatura de teste, use `POST /v1/test/subscriptions/{id}/simulate` (veja [Sandbox](/api-reference/sandbox)) para avançar o ciclo sem esperar o calendário: `PAY_INVOICE` gera `subscription.activated.v1` (primeira fatura) ou `subscription.renewed.v1`, e `FAIL_INVOICE` gera `subscription.payment_failed.v1`. Cancelar pela API gera `subscription.canceled.v1`.
+
 ## Formato do payload
+
+Toda entrega tem o mesmo envelope. O conteúdo de `data` varia por tipo de evento.
 
 ```json payment.succeeded.v1
 {
+  "id": "2c7e9a14-6b3d-4f8a-9e21-7d5c4b3a2f10",
   "type": "payment.succeeded.v1",
-  "timestamp": "2026-10-01T12:00:00.000Z",
+  "occurred_at": "2026-10-01T12:00:00.000Z",
+  "environment": "live",
   "data": {
-    "id": "pi_…",
+    "id": "8f4b2c1d-3e5a-4b6c-9d7e-0f1a2b3c4d5e",
     "amount_minor": 14990,
     "currency": "BRL",
-    "payment_intent_id": "pi_…",
+    "payment_intent_id": "8f4b2c1d-3e5a-4b6c-9d7e-0f1a2b3c4d5e",
     "payment_method": "PIX",
     "status": "SUCCEEDED"
   }
 }
 ```
 
+| Campo | Descrição |
+| --- | --- |
+| `id` | ID único do evento. Use como chave de deduplicação: o mesmo evento pode ser entregue mais de uma vez |
+| `type` | Tipo versionado do evento |
+| `occurred_at` | Quando o fato aconteceu na Korbit (ISO 8601, UTC) |
+| `environment` | `test` (sandbox) ou `live` (produção) |
+| `data` | Snapshot do recurso no momento do evento |
+
 - Campos são `snake_case`; `amount_minor` em centavos (BRL).
-- O payload contém o **snapshot relevante do evento** — campos presentes variam por tipo (ex.: `refund_initiator` e `review_deadline_at` em eventos de refund).
-- O envelope completo (com `type`, `timestamp` e assinatura) segue o padrão Svix — a verificação produz o objeto acima.
+- O snapshot traz os campos relevantes de cada tipo (ex.: `refund_initiator` e `review_deadline_at` em eventos de refund). Campos sem valor são omitidos.
+- Dados pessoais do comprador (documento, e-mail, telefone, endereço) e dados de cartão nunca vão no payload. Consulte a API quando precisar deles.
+- O objeto acima é o corpo da requisição. Os cabeçalhos de assinatura seguem o padrão Svix; veja [Verificação de assinatura](/webhooks/assinatura).
 
 <Note>
 Este catálogo é a fonte oficial dos tipos versionados. Novos eventos podem ser adicionados mantendo a versão; assine só o que sua integração consome.

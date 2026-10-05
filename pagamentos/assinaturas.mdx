@@ -9,13 +9,18 @@ Assinaturas são criadas a partir de uma [oferta](/catalogo-crm/produtos-e-ofert
 
 ```mermaid
 flowchart LR
-  A[Checkout aprovado] --> B[ATIVA]
-  B --> C{Ciclo}
-  C -->|cobrança ok| B
-  C -->|falha| D[Retentativas]
-  D --> B
-  B -->|cancelamento| E[CANCELADA]
+  P[PENDING_AUTHORIZATION] -->|1º pagamento aprovado| A[ACTIVE]
+  P -->|1º pagamento não concluído| C[CANCELED]
+  A -->|renovação paga| A
+  A -->|renovação recusada| D[PAST_DUE]
+  D -->|retentativa paga| A
+  D -->|carência acabou| X[EXPIRED]
+  A -->|cancelamento| C
+  D -->|cancelamento| C
+  C -->|fim do período pago| X
 ```
+
+Cada transição gera um [webhook de assinatura](#webhooks-de-assinatura).
 
 - **Criação**: comprador assina pelo [link de pagamento](/pagamentos/checkout-links) (ou sessão de checkout via API). O token de cartão recorrente é criado pelo provedor no primeiro pagamento.
 - **Cobranças**: cada ciclo gera uma fatura com o valor da oferta no momento da assinatura. PIX recorrente usa PIX Automático.
@@ -25,7 +30,7 @@ flowchart LR
 
 ```bash
 # Lista com paginação e filtros
-curl "https://api.korbit.com.br/v1/subscriptions?status=ATIVA" \
+curl "https://api.korbit.com.br/v1/subscriptions?status=ACTIVE" \
   -H "Authorization: Bearer kbt_live_EXEMPLO_NAO_USAR"
 
 # Detalhe com histórico
@@ -38,7 +43,28 @@ curl -X POST https://api.korbit.com.br/v1/subscriptions/{id}/cancel \
   -H "Idempotency-Key: $(uuidgen)"
 ```
 
-O cancelamento é **imediato** na Korbit (a assinatura não gera novas faturas). Confirmações chegam pelos eventos do produto — monitore também `refund.requested.v1`/`refund.updated.v1` caso o cancelamento venha acompanhado de contestação.
+O cancelamento interrompe as renovações na hora: nenhuma nova fatura é gerada e as já pagas não são afetadas. O comprador mantém acesso até `accessUntil`, quando a assinatura passa a `EXPIRED`.
+
+- **`200` com `status: CANCELED`**: cancelada.
+- **`202` com `status: CANCELLATION_REQUESTED`**: a Korbit está encerrando a autorização recorrente no meio de pagamento. A confirmação chega pelo webhook `subscription.canceled.v1`.
+
+Se o cancelamento vier acompanhado de pedido de reembolso ou contestação, acompanhe também os eventos `refund.*` e `dispute.*`.
+
+## Webhooks de assinatura
+
+Assine os eventos `subscription.*` para manter seu sistema em dia sem polling: liberar acesso na ativação, registrar renovações, avisar o cliente quando uma cobrança falhar e remover o acesso quando a assinatura expirar.
+
+| Evento | Quando |
+| --- | --- |
+| `subscription.created.v1` | Assinatura criada, aguardando o primeiro pagamento |
+| `subscription.activated.v1` | Primeiro pagamento aprovado |
+| `subscription.renewed.v1` | Renovação paga |
+| `subscription.payment_failed.v1` | Cobrança recusada (primeira ou renovação) |
+| `subscription.canceled.v1` | Renovações interrompidas, com o motivo em `cancellation_reason` |
+| `subscription.expired.v1` | Acesso encerrado, com o motivo em `expiration_reason` |
+| `subscription.plan_change_scheduled.v1` | Troca de plano agendada para o próximo ciclo |
+
+Payload, motivos e exemplos estão no [Catálogo de eventos](/webhooks/catalogo-de-eventos#assinaturas-recorrentes).
 
 ## Faturas
 

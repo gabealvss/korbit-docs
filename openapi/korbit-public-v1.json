@@ -6582,6 +6582,340 @@
         "description": "Lista paginada de pedidos com filtros por estado, método de pagamento e período. Cada pedido carrega o pagamento associado e o comprador."
       }
     },
+    "/v1/orders/{id}/simulate-pix-payment": {
+      "post": {
+        "operationId": "simulateTestCommerceOrderPixPayment",
+        "tags": [
+          "Clientes e Pedidos"
+        ],
+        "description": "Test environment only. Confirms the Pix payment of a sandbox order, like the pix.paid scenario of the payments simulator.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "orderId",
+                    "paymentIntentId",
+                    "status"
+                  ],
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "paymentIntentId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "PAID"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "instance",
+                    "requestId",
+                    "status",
+                    "title",
+                    "type"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "instance": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "minimum": 400,
+                      "maximum": 599
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "instance",
+                    "requestId",
+                    "status",
+                    "title",
+                    "type"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "instance": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "minimum": 400,
+                      "maximum": 599
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "instance",
+                    "requestId",
+                    "status",
+                    "title",
+                    "type"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "instance": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "minimum": 400,
+                      "maximum": 599
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "instance",
+                    "requestId",
+                    "status",
+                    "title",
+                    "type"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "instance": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "minimum": 400,
+                      "maximum": 599
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "instance",
+                    "requestId",
+                    "status",
+                    "title",
+                    "type"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "instance": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "minimum": 400,
+                      "maximum": 599
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "detail",
+                    "instance",
+                    "requestId",
+                    "status",
+                    "title",
+                    "type"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "instance": {
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "minimum": 400,
+                      "maximum": 599
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Simulate Test Order Pix Payment"
+      }
+    },
     "/v1/test/subscriptions/{id}/simulate": {
       "post": {
         "operationId": "simulateTestCommerceSubscription",
@@ -13014,6 +13348,19 @@
                     "type": "integer",
                     "minimum": 7,
                     "maximum": 90
+                  },
+                  "statementDescriptorSuffix": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 6,
+                        "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 }
               }
@@ -13056,6 +13403,7 @@
                     "name",
                     "productType",
                     "refundWindowDays",
+                    "statementDescriptorSuffix",
                     "status",
                     "updatedAt"
                   ],
@@ -13137,6 +13485,19 @@
                       "type": "integer",
                       "minimum": 7,
                       "maximum": 90
+                    },
+                    "statementDescriptorSuffix": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 6,
+                          "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "status": {
                       "type": "string",
@@ -13173,6 +13534,7 @@
                     "name",
                     "productType",
                     "refundWindowDays",
+                    "statementDescriptorSuffix",
                     "status",
                     "updatedAt"
                   ],
@@ -13254,6 +13616,19 @@
                       "type": "integer",
                       "minimum": 7,
                       "maximum": 90
+                    },
+                    "statementDescriptorSuffix": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 6,
+                          "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "status": {
                       "type": "string",
@@ -13559,6 +13934,7 @@
                           "name",
                           "productType",
                           "refundWindowDays",
+                          "statementDescriptorSuffix",
                           "status",
                           "updatedAt"
                         ],
@@ -13640,6 +14016,19 @@
                             "type": "integer",
                             "minimum": 7,
                             "maximum": 90
+                          },
+                          "statementDescriptorSuffix": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 6,
+                                "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           },
                           "status": {
                             "type": "string",
@@ -13901,6 +14290,7 @@
                     "name",
                     "productType",
                     "refundWindowDays",
+                    "statementDescriptorSuffix",
                     "status",
                     "updatedAt"
                   ],
@@ -13982,6 +14372,19 @@
                       "type": "integer",
                       "minimum": 7,
                       "maximum": 90
+                    },
+                    "statementDescriptorSuffix": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 6,
+                          "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "status": {
                       "type": "string",
@@ -14225,6 +14628,19 @@
                     "type": "integer",
                     "minimum": 7,
                     "maximum": 90
+                  },
+                  "statementDescriptorSuffix": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 6,
+                        "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 }
               }
@@ -14276,6 +14692,7 @@
                     "name",
                     "productType",
                     "refundWindowDays",
+                    "statementDescriptorSuffix",
                     "status",
                     "updatedAt"
                   ],
@@ -14357,6 +14774,19 @@
                       "type": "integer",
                       "minimum": 7,
                       "maximum": 90
+                    },
+                    "statementDescriptorSuffix": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 6,
+                          "pattern": "^[A-Z0-9]+(?: [A-Z0-9]+)*$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "status": {
                       "type": "string",
@@ -31789,7 +32219,14 @@
                         "dispute.opened.v1",
                         "dispute.updated.v1",
                         "merchant.kyc.updated.v1",
-                        "merchant.status.updated.v1"
+                        "merchant.status.updated.v1",
+                        "subscription.created.v1",
+                        "subscription.activated.v1",
+                        "subscription.renewed.v1",
+                        "subscription.payment_failed.v1",
+                        "subscription.canceled.v1",
+                        "subscription.expired.v1",
+                        "subscription.plan_change_scheduled.v1"
                       ]
                     },
                     "description": "Tipos de evento que serão entregues — assine só o que sua integração consome."
@@ -31871,7 +32308,14 @@
                           "dispute.opened.v1",
                           "dispute.updated.v1",
                           "merchant.kyc.updated.v1",
-                          "merchant.status.updated.v1"
+                          "merchant.status.updated.v1",
+                          "subscription.created.v1",
+                          "subscription.activated.v1",
+                          "subscription.renewed.v1",
+                          "subscription.payment_failed.v1",
+                          "subscription.canceled.v1",
+                          "subscription.expired.v1",
+                          "subscription.plan_change_scheduled.v1"
                         ]
                       }
                     },
@@ -31949,7 +32393,14 @@
                           "dispute.opened.v1",
                           "dispute.updated.v1",
                           "merchant.kyc.updated.v1",
-                          "merchant.status.updated.v1"
+                          "merchant.status.updated.v1",
+                          "subscription.created.v1",
+                          "subscription.activated.v1",
+                          "subscription.renewed.v1",
+                          "subscription.payment_failed.v1",
+                          "subscription.canceled.v1",
+                          "subscription.expired.v1",
+                          "subscription.plan_change_scheduled.v1"
                         ]
                       }
                     },
@@ -32318,7 +32769,14 @@
                                 "dispute.opened.v1",
                                 "dispute.updated.v1",
                                 "merchant.kyc.updated.v1",
-                                "merchant.status.updated.v1"
+                                "merchant.status.updated.v1",
+                                "subscription.created.v1",
+                                "subscription.activated.v1",
+                                "subscription.renewed.v1",
+                                "subscription.payment_failed.v1",
+                                "subscription.canceled.v1",
+                                "subscription.expired.v1",
+                                "subscription.plan_change_scheduled.v1"
                               ]
                             }
                           },
@@ -32613,7 +33071,14 @@
                           "dispute.opened.v1",
                           "dispute.updated.v1",
                           "merchant.kyc.updated.v1",
-                          "merchant.status.updated.v1"
+                          "merchant.status.updated.v1",
+                          "subscription.created.v1",
+                          "subscription.activated.v1",
+                          "subscription.renewed.v1",
+                          "subscription.payment_failed.v1",
+                          "subscription.canceled.v1",
+                          "subscription.expired.v1",
+                          "subscription.plan_change_scheduled.v1"
                         ]
                       }
                     },
@@ -32691,7 +33156,14 @@
                           "dispute.opened.v1",
                           "dispute.updated.v1",
                           "merchant.kyc.updated.v1",
-                          "merchant.status.updated.v1"
+                          "merchant.status.updated.v1",
+                          "subscription.created.v1",
+                          "subscription.activated.v1",
+                          "subscription.renewed.v1",
+                          "subscription.payment_failed.v1",
+                          "subscription.canceled.v1",
+                          "subscription.expired.v1",
+                          "subscription.plan_change_scheduled.v1"
                         ]
                       }
                     },
