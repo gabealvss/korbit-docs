@@ -53,7 +53,19 @@ except WebhookVerificationError:
     return ("invalid signature", 400)
 ```
 
-## Sem SDK
+## Verificação com o SDK
+
+O SDK oficial já embute esta verificação (sem dependências):
+
+```ts
+import { verifyWebhook } from '@korbitbr/sdk';
+
+const event = verifyWebhook(rawBody, req.headers, process.env.KORBIT_WEBHOOK_SECRET);
+```
+
+Erros lançados são `WebhookVerificationError` — **nunca processe o evento** quando ocorrem.
+
+## Sem SDK (ou sem o pacote svix)
 
 ```javascript
 import { createHmac, timingSafeEqual } from 'node:crypto';

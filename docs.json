@@ -56,6 +56,12 @@
         ]
       },
       {
+        "tab": "SDK",
+        "pages": [
+          "sdk/visao-geral"
+        ]
+      },
+      {
         "tab": "API Reference",
         "openapi": "openapi/korbit-public-v1.json",
         "groups": [

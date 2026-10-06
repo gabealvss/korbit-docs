@@ -1,0 +1,130 @@
+---
+title: "SDK Node.js"
+description: "SDK oficial da Korbit para Node.js: idempotência automática, retries com backoff, erros tipados e verificação de webhooks nativa."
+---
+
+O SDK oficial (`@korbitbr/sdk`) é a forma recomendada de integrar a Korbit em Node.js: ele implementa para você as regras que a API exige — **idempotência automática em toda mutação**, **retry com backoff** respeitando `Retry-After`, **erros tipados** com `code`/`requestId` e **verificação de webhooks** sem dependências extras.
+
+## Instalação
+
+```bash
+npm install @korbitbr/sdk
+```
+
+Requisitos: Node.js ≥ 18. Zero dependências de runtime.
+
+## Quickstart: primeira cobrança PIX
+
+```ts
+import { Korbit } from '@korbitbr/sdk';
+
+const korbit = new Korbit({ apiKey: process.env.KORBIT_API_KEY });
+
+const payment = await korbit.payments.create({
+  amount: 14990,            // centavos (BRL): R$ 149,90
+  paymentMethod: 'PIX',
+  externalReference: 'pedido-1042',
+});
+
+// → REQUIRES_ACTION com o código copia-e-cola em payment.pix.copyAndPaste
+// O estado final chega por webhook; confirme por API antes de liberar o produto:
+const intent = await korbit.payments.get(payment.id);
+```
+
+O ambiente é **derivado da chave**: `kbt_test_…` → sandbox, `kbt_live_…` → produção. Nenhum parâmetro de ambiente.
+
+## O que o SDK faz por você
+
+<CardGroup cols={2}>
+  <Card title="Idempotência automática" icon="key">
+    Toda mutação envia `Idempotency-Key` (UUID, com override por chamada) — retries e timeouts nunca cobram duas vezes.
+  </Card>
+  <Card title="Retry com backoff" icon="rotate">
+    `429`, `503` e falhas de rede são re-tentados com backoff exponencial, honrando `Retry-After` (`maxRetries` configurável).
+  </Card>
+  <Card title="Erros tipados" icon="triangle-alert">
+    `KorbitApiError` com `status`, `code` e `requestId` — decida a lógica pelo `code`, não pelo texto.
+  </Card>
+  <Card title="Webhooks nativos" icon="bell">
+    `verifyWebhook(payload, headers, secret)` com HMAC, comparação timing-safe e tolerância anti-replay — sem instalar nada além do SDK.
+  </Card>
+</CardGroup>
+
+## Exemplos por domínio
+
+<Tabs>
+  <Tab title="Catálogo e link de pagamento">
+    ```ts
+    const product = await korbit.catalog.products.create({ name: 'Curso de Marketing' });
+    const price = await korbit.catalog.products.createPrice(product.id, { amountMinor: 14990 });
+    const offer = await korbit.catalog.products.createOffer(product.id, {
+      priceId: price.id,
+      paymentMethods: ['PIX', 'CARD'],
+      maxInstallments: 12,
+    });
+    await korbit.catalog.offers.publish(offer.id); // gera o publicCode do link
+    ```
+  </Tab>
+  <Tab title="Pedidos e clientes">
+    ```ts
+    for await (const order of korbit.orders.iterate({ status: 'PAID' })) {
+      console.log(order.id, order.amount);
+    }
+
+    await korbit.customers.create({ name: 'Maria', email: 'maria@example.com' });
+    ```
+    `iterate()` percorre todas as páginas com cursor automaticamente.
+  </Tab>
+  <Tab title="Assinaturas">
+    ```ts
+    for await (const sub of korbit.subscriptions.iterate({ status: 'ATIVA' })) { … }
+    await korbit.subscriptions.listInvoices(sub.id);   // faturas por ciclo
+    await korbit.subscriptions.cancel(sub.id);         // imediato
+    ```
+  </Tab>
+  <Tab title="Saldo e saques">
+    ```ts
+    const balance = await korbit.balance.get();
+    const payout = await korbit.payouts.request({
+      amountMinor: 150000,
+      beneficiaryId,   // cadastre antes via korbit.payouts.beneficiaries.create()
+    });
+    ```
+  </Tab>
+  <Tab title="Webhooks">
+    ```ts
+    import { verifyWebhook } from '@korbitbr/sdk';
+
+    app.post('/korbit/webhooks', async (req, res) => {
+      const raw = await req.text();               // corpo BRUTO
+      let event;
+      try {
+        event = verifyWebhook(raw, req.headers, process.env.KORBIT_WEBHOOK_SECRET);
+      } catch {
+        return res.status(400).end();             // nunca processe sem assinatura válida
+      }
+      await queue.enqueue(event);                 // persista e responda rápido
+      res.status(202).end();
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Opções do cliente
+
+```ts
+const korbit = new Korbit({
+  apiKey: 'kbt_live_…',   // obrigatório; define o ambiente
+  baseUrl: '…',           // override (desenvolvimento/proxies)
+  timeoutMs: 30_000,
+  maxRetries: 2,
+});
+```
+
+## Compatibilidade com a API
+
+O SDK é testado por **contrato contra a nossa especificação OpenAPI pública**: a CI do SDK falha se a API ganhar endpoint sem cobertura. Não há como o SDK divergir silenciosamente da API.
+
+<Note>
+Streaming de exportações CSV (`export.csv`) tem fluxo próprio — use o escape hatch `korbit.request('GET', '/v1/orders/export.csv', …)` e leia a resposta como stream.
+</Note>
