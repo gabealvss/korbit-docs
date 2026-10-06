@@ -1,0 +1,37 @@
+---
+title: "SDKs"
+description: "Integre a Korbit na linguagem do seu projeto — SDK oficial para Node.js e roadmap por linguagem."
+---
+
+Você não precisa de SDK para usar a Korbit — a API é REST/JSON com [OpenAPI 3.1](/api-reference) e qualquer cliente HTTP funciona. O SDK existe para que você **não precise reimplementar as regras**: idempotência, retries, erros tipados e verificação de webhooks já vem prontos e testados.
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="fa-brands fa-node-js" href="/sdk/visao-geral" color="#3C873A">
+    **SDK oficial** — `@korbitbr/sdk`, TypeScript nativo, zero dependências de runtime. Idempotência automática, retries com backoff, `verifyWebhook` nativo.
+  </Card>
+</CardGroup>
+
+## Como escolher o caminho certo
+
+| Se o seu caso é… | Use |
+| --- | --- |
+| Backend Node.js em produção | [`@korbitbr/sdk`](/sdk/visao-geral) |
+| API consumida por outro runtime (Python, Go, PHP…) | REST direta com a [API Reference](/api-reference) — os exemplos de cada endpoint são portáveis |
+| Agente de IA operando a conta | [MCP Server](/ia/mcp) |
+| IA escrevendo a integração | [Skills](/ia/skills) |
+
+<Note>
+Novas linguagens seguem demanda da comunidade: abra uma issue no repositório do SDK indicando runtime e caso de uso — o roadmap considera volume de pedidos.
+</Note>
+
+## Convenções que atravessam qualquer linguagem
+
+Independentemente do cliente HTTP, toda integração Korbit segue as mesmas regras — vale a pena conhecê-las antes de escolher a ferramenta:
+
+1. **Valores em centavos inteiros** (BRL) — `14990` = R$ 149,90.
+2. **Idempotency-Key em toda mutação** — o servidor nunca executa o mesmo comando duas vezes.
+3. **Ambiente derivado da chave** — `kbt_test_` para sandbox, `kbt_live_` para produção.
+4. **Erros RFC 7807 com `code` estável** — decida a lógica pelo código, nunca pelo texto.
+5. **Webhooks assinados (Svix) com entrega at-least-once** — verifique a assinatura e deduplique por `id`.
+
+Veja a lista completa em [Fundamentos da API](/guias/erros) e [Idempotência](/guias/idempotencia).

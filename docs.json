@@ -58,6 +58,7 @@
       {
         "tab": "SDK",
         "pages": [
+          "sdk/sdks",
           "sdk/visao-geral"
         ]
       },
