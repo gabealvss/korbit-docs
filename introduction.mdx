@@ -38,45 +38,64 @@ mode: "custom"
   </div>
 </div>
 
-{/* ───────────────────────── PERSONAS ───────────────────────── */}
-<div className="max-w-4xl mx-auto px-6 py-16">
-  <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">
-    Por onde você quer começar?
+{/* ───────────────────────── TRILHAS ───────────────────────── */}
+<div className="max-w-5xl mx-auto px-6 py-16 border-t border-gray-950/5 dark:border-white/[0.06]">
+  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+    Da venda ao PIX na conta: escolha o seu lado
   </h2>
-  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-10">
-    Escolha o caminho que faz mais sentido para você agora.
+  <p className="text-sm text-gray-600 dark:text-gray-400 mb-10">
+    A mesma plataforma para quem vende e para quem constrói — comece pelo caminho que você ocupa hoje.
   </p>
   <div className="grid md:grid-cols-2 gap-4">
-    <a href="/plataforma/visao-geral" className="no-underline group">
-      <div className="h-full p-7 rounded-2xl border-2 border-[#6D3AF2] bg-[#6D3AF2]/[0.06] dark:bg-[#6D3AF2]/[0.12] transition-transform group-hover:-translate-y-0.5">
-        <div className="text-3xl mb-4">🛍️</div>
-        <div className="text-lg font-bold text-[#6D3AF2] dark:text-[#A78BFA] mb-2">
-          Sou lojista / empreendedor
-        </div>
-        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-          Quero entender a plataforma, a jornada do dinheiro e acompanhar
-          vendas, saldo e saques — sem precisar saber programar.
-        </div>
-        <div className="text-sm font-semibold text-[#6D3AF2] dark:text-[#A78BFA]">
-          Começar por aqui →
-        </div>
+    <div className="rounded-2xl border border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/[0.03] p-7">
+      <div className="text-xs font-semibold uppercase tracking-widest text-[#6D3AF2] dark:text-[#A78BFA] mb-3">
+        Para quem vende
       </div>
-    </a>
-    <a href="/api-reference/introducao" className="no-underline group">
-      <div className="h-full p-7 rounded-2xl border border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/[0.03] transition-transform group-hover:-translate-y-0.5">
-        <div className="text-3xl mb-4">💻</div>
-        <div className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          Sou desenvolvedor
-        </div>
-        <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-          Quero integrar a API, receber webhooks assinados e automatizar
-          cobranças, payouts e conciliação no meu sistema.
-        </div>
-        <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 group-hover:text-[#6D3AF2] dark:group-hover:text-[#A78BFA]">
-          Ver documentação técnica →
-        </div>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-5">
+        Vender e receber, sem escrever código
+      </h3>
+      <ol className="space-y-2.5 text-sm text-gray-700 dark:text-gray-300 mb-6">
+        <li>
+          <span className="font-semibold text-gray-900 dark:text-white">1.</span> Cadastre a conta e o produto no painel
+        </li>
+        <li>
+          <span className="font-semibold text-gray-900 dark:text-white">2.</span> Publique o link de pagamento e compartilhe onde quiser
+        </li>
+        <li>
+          <span className="font-semibold text-gray-900 dark:text-white">3.</span> Acompanhe pedidos, saldo e liberações em tempo real
+        </li>
+        <li>
+          <span className="font-semibold text-gray-900 dark:text-white">4.</span> Solicite o saque direto para PIX
+        </li>
+      </ol>
+      <a
+        href="/plataforma/visao-geral"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6D3AF2] dark:text-[#A78BFA] no-underline hover:underline"
+      >
+        Conhecer a jornada completa →
+      </a>
+    </div>
+    <div className="rounded-2xl border border-gray-950/10 dark:border-white/10 bg-white dark:bg-white/[0.03] p-7 flex flex-col">
+      <div className="text-xs font-semibold uppercase tracking-widest text-[#6D3AF2] dark:text-[#A78BFA] mb-3">
+        Para quem constrói
       </div>
-    </a>
+      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-5">
+        Cobranças em três linhas
+      </h3>
+      <div className="rounded-xl bg-gray-950 dark:bg-black/60 p-4 font-mono text-[13px] leading-relaxed text-gray-100 mb-6 overflow-x-auto">
+        <div><span className="text-gray-500">import</span> {'{'} Korbit {'}'} <span className="text-gray-500">from</span> '@korbitbr/sdk';</div>
+        <div><span className="text-gray-500">const</span> korbit = <span className="text-gray-500">new</span> Korbit({'{'} apiKey {'}'});</div>
+        <div><span className="text-gray-500">await</span> korbit.payments.create({'{'} amount: <span className="text-[#A78BFA]">14990</span>, paymentMethod: <span className="text-[#A78BFA]">'PIX'</span> {'}'});</div>
+      </div>
+      <div className="mt-auto flex items-center gap-4 text-sm">
+        <a href="/guias/quickstart" className="font-semibold text-[#6D3AF2] dark:text-[#A78BFA] no-underline hover:underline">
+          Quickstart completo →
+        </a>
+        <a href="/api-reference/introducao" className="text-gray-600 dark:text-gray-400 no-underline hover:underline">
+          API Reference
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 
